@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>単語帳 PM ・ Modul Pengolahan Makanan 2024</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF3F2;
+    --bg-grid:#E2EAE8;
+    --surface:#FFFFFF;
+    --surface-alt:#DCE6E5;
+    --ink:#1B2A2E;
+    --ink-soft:#55696D;
+    --ink-faint:#8CA0A2;
+    --line:#C8D6D4;
+    --accent:#2E6E7A;
+    --accent-dark:#1E4E58;
+    --accent-tint:#DCEEEF;
+    --amber:#D98C2B;
+    --amber-tint:#FBEBD5;
+    --green:#2F7A55;
+    --green-tint:#DDEFE3;
+    --red:#B14A42;
+    --red-tint:#F6DEDA;
+    --radius-lg:22px;
+    --radius-md:14px;
+    --radius-sm:8px;
+    --shadow-card:0 1px 0 rgba(27,42,46,0.04), 0 18px 40px -18px rgba(27,42,46,0.35);
+    --font-display:'Barlow Condensed', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-jp:'Noto Sans JP', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 700px at 10% -10%, #F4F8F7 0%, var(--bg) 55%),
+      repeating-linear-gradient(90deg, var(--bg-grid) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(0deg, var(--bg-grid) 0 1px, transparent 1px 64px);
+    background-color:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overscroll-behavior:none;
+  }
+
+  .app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:18px 18px 28px;
+  }
+
+  /* ---------- shared top mark ---------- */
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    padding:6px 2px 22px;
+  }
+  .brand-mark{
+    font-family:var(--font-jp);
+    font-weight:700;
+    font-size:22px;
+    color:var(--accent-dark);
+    background:var(--accent-tint);
+    border:1px solid var(--accent);
+    border-radius:8px;
+    padding:2px 8px;
+    line-height:1.3;
+  }
+  .brand-text{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:.2px;
+    color:var(--ink-soft);
+  }
+
+  /* ================= SELECTION SCREEN ================= */
+  .view{ display:none; flex:1; flex-direction:column; }
+  .view.active{ display:flex; }
+
+  .hero h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:38px;
+    line-height:1.02;
+    letter-spacing:.2px;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hero p{
+    margin:0 0 26px;
+    color:var(--ink-soft);
+    font-size:15.5px;
+    line-height:1.55;
+    max-width:40ch;
+  }
+
+  .mode-switch{
+    display:flex;
+    background:var(--surface-alt);
+    border-radius:999px;
+    padding:4px;
+    margin-bottom:26px;
+    border:1px solid var(--line);
+  }
+  .mode-switch button{
+    flex:1;
+    border:none;
+    background:transparent;
+    padding:10px 8px;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    color:var(--ink-soft);
+    border-radius:999px;
+    cursor:pointer;
+    transition:background .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+  .mode-switch button.active{
+    background:var(--surface);
+    color:var(--accent-dark);
+    box-shadow:0 1px 0 rgba(27,42,46,0.06), 0 6px 14px -8px rgba(27,42,46,0.35);
+  }
+
+  .section-label{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:14px;
+    color:var(--ink-faint);
+    margin:0 0 10px 2px;
+  }
+
+  .bab-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .bab-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:14px 14px;
+    cursor:pointer;
+    user-select:none;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+  }
+  .bab-card:active{ transform:scale(.99); }
+  .bab-card.checked{
+    border-color:var(--accent);
+    box-shadow:0 0 0 1px var(--accent) inset;
+  }
+  .bab-swatch{
+    width:6px;
+    align-self:stretch;
+    border-radius:4px;
+    flex:none;
+  }
+  .bab-info{ flex:1; min-width:0; }
+  .bab-info .name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:18px;
+    color:var(--ink);
+  }
+  .bab-info .desc{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:1px;
+  }
+  .bab-count{
+    font-family:var(--font-display);
+    font-size:13px;
+    color:var(--ink-faint);
+    white-space:nowrap;
+    padding-right:2px;
+  }
+  .check{
+    width:22px; height:22px;
+    border-radius:7px;
+    border:1.5px solid var(--line);
+    flex:none;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface);
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .bab-card.checked .check{
+    background:var(--accent);
+    border-color:var(--accent);
+  }
+  .check svg{ width:13px; height:13px; opacity:0; transition:opacity .1s ease; }
+  .bab-card.checked .check svg{ opacity:1; }
+
+  .quick-row{
+    display:flex;
+    gap:8px;
+    margin:2px 2px 24px;
+  }
+  .quick-row button{
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:12.5px;
+    padding:7px 12px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .quick-row button:hover{ border-color:var(--accent); color:var(--accent-dark); }
+
+  /* ---------- range panel (shown when shuffle is off) ---------- */
+  .range-panel{
+    display:none;
+    flex-direction:column;
+    gap:10px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:14px;
+    margin:2px 2px 24px;
+  }
+  .range-panel-label{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .range-panel-sub{
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-top:-6px;
+  }
+  .range-chunk-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .range-chunk-label{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-right:2px;
+  }
+  .range-chunk-btn{
+    border:1px solid var(--line);
+    background:var(--surface-alt);
+    color:var(--ink-soft);
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:12.5px;
+    padding:5px 12px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .range-chunk-btn.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .range-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    max-height:132px;
+    overflow-y:auto;
+    padding:2px;
+  }
+  .range-chip{
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:12.5px;
+    padding:6px 11px;
+    border-radius:9px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .range-chip:hover{ border-color:var(--accent); }
+  .range-chip.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .range-custom{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    padding-top:4px;
+    border-top:1px solid var(--line);
+  }
+  .range-custom-label{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-right:2px;
+  }
+  .range-custom input[type="number"]{
+    width:64px;
+    font-family:var(--font-body);
+    font-size:14px;
+    padding:7px 8px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink);
+    outline:none;
+  }
+  .range-custom input[type="number"]:focus{ border-color:var(--accent); }
+  .range-dash{ color:var(--ink-faint); font-weight:600; }
+  .range-custom button{
+    border:1px solid var(--accent);
+    background:var(--accent-tint);
+    color:var(--accent-dark);
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:12.5px;
+    padding:7px 13px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .range-custom button.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .range-status{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--accent-dark);
+    background:var(--accent-tint);
+    border-radius:8px;
+    padding:8px 10px;
+  }
+  .range-status.empty{ display:none; }
+  .range-status button{
+    border:none;
+    background:transparent;
+    color:var(--red);
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:12px;
+    cursor:pointer;
+    padding:2px 4px;
+    flex:none;
+  }
+
+  .spacer{ flex:1; }
+
+  .start-btn{
+    width:100%;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:.3px;
+    padding:16px;
+    border-radius:14px;
+    cursor:pointer;
+    box-shadow:0 12px 24px -10px rgba(30,78,88,0.55);
+    transition:transform .1s ease, opacity .15s ease, background .15s ease;
+  }
+  .start-btn[disabled]{
+    background:var(--ink-faint);
+    box-shadow:none;
+    cursor:not-allowed;
+  }
+  .start-btn:not([disabled]):active{ transform:scale(.985); }
+  .quiz-btn{
+    width:100%;
+    margin-top:10px;
+    border:1.5px solid var(--accent);
+    background:var(--accent-tint);
+    color:var(--accent-dark);
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:17px;
+    padding:14px;
+    border-radius:14px;
+    cursor:pointer;
+    transition:transform .1s ease, opacity .15s ease;
+  }
+  .quiz-btn[disabled]{
+    background:var(--surface-alt);
+    border-color:var(--line);
+    color:var(--ink-faint);
+    cursor:not-allowed;
+  }
+  .quiz-btn:not([disabled]):active{ transform:scale(.985); }
+  .start-hint{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin-top:10px;
+  }
+  .list-open-btn{
+    width:100%;
+    margin-top:14px;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--accent-dark);
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    padding:12px;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  .list-open-btn:hover{ border-color:var(--accent); }
+
+  /* ================= PRACTICE SCREEN ================= */
+  .practice-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .back-btn{
+    border:1px solid var(--line);
+    background:var(--surface);
+    width:38px; height:38px;
+    border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    flex:none;
+    color:var(--ink-soft);
+  }
+  .progress-wrap{ flex:1; min-width:0; }
+  .progress-labels{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--font-display);
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .progress-labels b{ color:var(--ink); font-weight:600; }
+  .progress-track{
+    height:6px;
+    border-radius:999px;
+    background:var(--surface-alt);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    border-radius:999px;
+    transition:width .25s ease;
+  }
+
+  .stage{
+    position:relative;
+    flex:1;
+    min-height:400px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 0 18px;
+  }
+
+  .hint-badge{
+    position:absolute;
+    top:2px; left:50%;
+    transform:translateX(-50%);
+    font-family:var(--font-display);
+    font-size:12.5px;
+    color:var(--ink-faint);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    pointer-events:none;
+  }
+
+  .card{
+    position:absolute;
+    width:100%;
+    max-width:340px;
+    height:420px;
+    cursor:grab;
+    touch-action:none;
+  }
+  .card.top{ z-index:5; }
+  .card-inner{
+    position:relative;
+    width:100%; height:100%;
+    transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .card.flipped .card-inner{ transform:rotateY(180deg); }
+  .card.dragging .card-inner{ transition:none; }
+
+  .face{
+    position:absolute;
+    inset:0;
+    border-radius:var(--radius-lg);
+    background:var(--surface);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-card);
+    backface-visibility:hidden;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .face-back{ transform:rotateY(180deg); }
+
+  .tag{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px 0;
+  }
+  .tag .chip{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:12px;
+    color:#fff;
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  .page-pill{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:12.5px;
+    color:#8A5A12;
+    background:var(--amber-tint);
+    border:1px solid #EBCB9B;
+    padding:3px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .retry-pill{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:12px;
+    color:var(--red);
+    background:var(--red-tint);
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:6px;
+  }
+  .list-row .pg{
+    display:inline-block;
+    margin-left:8px;
+    font-family:var(--font-display);
+    font-size:12px;
+    color:#8A5A12;
+    background:var(--amber-tint);
+    padding:1px 7px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .match-pg{
+    display:block;
+    font-family:var(--font-display);
+    font-size:11px;
+    color:#8A5A12;
+    margin-top:2px;
+  }
+  .tag .num{
+    font-family:var(--font-display);
+    font-size:12.5px;
+    color:var(--ink-faint);
+  }
+
+  .face-body{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:20px 22px;
+  }
+  .kanji-text{
+    font-family:var(--font-jp);
+    font-weight:700;
+    font-size:clamp(28px, 8vw, 46px);
+    line-height:1.25;
+    word-break:keep-all;
+    color:var(--ink);
+  }
+  .id-text{
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:clamp(22px, 6.5vw, 32px);
+    line-height:1.3;
+    color:var(--ink);
+  }
+  .back-stack{ display:flex; flex-direction:column; gap:14px; align-items:center; }
+  .furigana-text{
+    font-family:var(--font-jp);
+    font-size:20px;
+    color:var(--accent-dark);
+    letter-spacing:.5px;
+  }
+  .divider-dot{
+    width:26px; height:2px;
+    background:var(--line);
+    border-radius:2px;
+  }
+  .meaning-text{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:22px;
+    color:var(--ink);
+    line-height:1.35;
+  }
+  .kanji-small{
+    font-family:var(--font-jp);
+    font-weight:700;
+    font-size:26px;
+    color:var(--ink);
+  }
+
+  .tap-flip-hint{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--ink-faint);
+    padding:0 16px 14px;
+    font-family:var(--font-body);
+  }
+
+  .stamp{
+    position:absolute;
+    top:26px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:1.5px;
+    padding:6px 14px;
+    border-radius:10px;
+    border:3px solid currentColor;
+    text-transform:uppercase;
+    opacity:0;
+    transform:rotate(-12deg);
+  }
+  .stamp.right{ left:22px; color:var(--green); }
+  .stamp.left{ right:22px; color:var(--red); }
+  .stamp.down{ left:50%; transform:translateX(-50%) rotate(0deg); color:var(--amber); top:auto; bottom:26px; }
+
+  .controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    padding-top:6px;
+  }
+  .ctrl-btn{
+    border:none;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:var(--font-display);
+    font-size:12.5px;
+    font-weight:600;
+  }
+  .ctrl-circle{
+    width:58px; height:58px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface);
+    border:1px solid var(--line);
+    box-shadow:0 8px 18px -10px rgba(27,42,46,0.4);
+    transition:transform .1s ease;
+  }
+  .ctrl-btn:active .ctrl-circle{ transform:scale(.92); }
+  .ctrl-btn.again .ctrl-circle{ color:var(--red); }
+  .ctrl-btn.unseen .ctrl-circle{ color:var(--amber); width:48px; height:48px; }
+  .ctrl-btn.known .ctrl-circle{ color:var(--green); }
+
+  /* ================= SUMMARY SCREEN ================= */
+  .summary{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:6px;
+  }
+  .summary .badge{
+    font-family:var(--font-jp);
+    font-weight:700;
+    font-size:40px;
+    background:var(--accent-tint);
+    color:var(--accent-dark);
+    border:1px solid var(--accent);
+    width:96px; height:96px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:18px;
+  }
+  .summary h2{
+    font-family:var(--font-display);
+    font-size:30px;
+    margin:0 0 4px;
+  }
+  .summary .big-stat{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:58px;
+    color:var(--accent-dark);
+    margin:6px 0 2px;
+  }
+  .summary p{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    margin:0 0 26px;
+  }
+  .summary-actions{
+    display:flex;
+    gap:10px;
+    width:100%;
+    max-width:340px;
+  }
+  .summary-actions button{
+    flex:1;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    padding:13px;
+    border-radius:12px;
+    cursor:pointer;
+  }
+  .btn-ghost{
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--ink);
+  }
+  .btn-solid{
+    background:var(--accent);
+    border:none;
+    color:#fff;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card-inner, .progress-fill, .card{ transition:none !important; }
+  }
+
+  @media (max-width:380px){
+    .hero h1{ font-size:32px; }
+    .card{ height:380px; }
+  }
+
+  /* ================= LIST VIEW ================= */
+  .list-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .list-top h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:26px;
+    margin:0;
+    flex:1;
+  }
+  .search-wrap{
+    position:relative;
+    margin-bottom:16px;
+  }
+  .search-wrap input{
+    width:100%;
+    font-family:var(--font-body);
+    font-size:15px;
+    padding:12px 14px 12px 40px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink);
+    outline:none;
+  }
+  .search-wrap input:focus{ border-color:var(--accent); }
+  .search-wrap svg{
+    position:absolute;
+    left:13px; top:50%;
+    transform:translateY(-50%);
+    color:var(--ink-faint);
+    pointer-events:none;
+  }
+  .list-scroll{
+    flex:1;
+    overflow-y:auto;
+    padding-bottom:8px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .list-group-header{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    color:#fff;
+    padding:9px 12px;
+    border-radius:10px;
+    margin:18px 0 8px;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  .list-group-header:first-child{ margin-top:0; }
+  .list-group-count{
+    margin-left:auto;
+    font-weight:500;
+    font-size:12.5px;
+    opacity:.85;
+  }
+  .list-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .list-row:last-child{ border-bottom:none; }
+  .list-row .kanji{
+    font-family:var(--font-jp);
+    font-weight:700;
+    font-size:18px;
+    color:var(--ink);
+    min-width:108px;
+    max-width:108px;
+    line-height:1.3;
+  }
+  .list-row .furi{
+    font-family:var(--font-jp);
+    font-size:12.5px;
+    color:var(--ink-faint);
+    display:block;
+    margin-top:1px;
+    font-weight:400;
+  }
+  .list-row .meaning{
+    flex:1;
+    font-size:14.5px;
+    color:var(--ink-soft);
+    line-height:1.35;
+  }
+  .list-empty{
+    text-align:center;
+    color:var(--ink-faint);
+    font-size:14px;
+    padding:40px 0;
+  }
+
+  /* ================= QUIZ VIEW ================= */
+  .quiz-question{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:34px 22px;
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .quiz-question .qlabel{
+    font-family:var(--font-display);
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin-bottom:10px;
+  }
+  .quiz-question .qtext-jp{
+    font-family:var(--font-jp);
+    font-weight:700;
+    font-size:clamp(28px, 8vw, 42px);
+    color:var(--ink);
+    line-height:1.3;
+  }
+  .quiz-question .qtext-furi{
+    font-family:var(--font-jp);
+    font-weight:400;
+    font-size:14px;
+    color:var(--ink-faint);
+    margin-top:6px;
+  }
+  .quiz-question .qtext-id{
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:clamp(20px, 6vw, 28px);
+    color:var(--ink);
+    line-height:1.35;
+  }
+  .quiz-options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .quiz-option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    text-align:left;
+    width:100%;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    border-radius:12px;
+    padding:14px 16px;
+    font-family:var(--font-body);
+    font-size:15.5px;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .08s ease;
+  }
+  .quiz-option .opt-jp{
+    font-family:var(--font-jp);
+    font-weight:600;
+  }
+  .quiz-option .opt-jp-wrap{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .quiz-option .opt-furi{
+    font-family:var(--font-jp);
+    font-weight:400;
+    font-size:12px;
+    color:var(--ink-faint);
+  }
+  .quiz-option:not([disabled]):active{ transform:scale(.99); }
+  .quiz-option .opt-letter{
+    flex:none;
+    width:26px; height:26px;
+    border-radius:8px;
+    background:var(--surface-alt);
+    color:var(--ink-soft);
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .quiz-option.correct{
+    border-color:var(--green);
+    background:var(--green-tint);
+  }
+  .quiz-option.correct .opt-letter{ background:var(--green); color:#fff; }
+  .quiz-option.wrong{
+    border-color:var(--red);
+    background:var(--red-tint);
+  }
+  .quiz-option.wrong .opt-letter{ background:var(--red); color:#fff; }
+  .quiz-option[disabled]{ cursor:default; }
+
+  .quiz-feedback{
+    text-align:center;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:15px;
+    margin-top:16px;
+    min-height:22px;
+  }
+  .quiz-feedback.correct{ color:var(--green); }
+  .quiz-feedback.wrong{ color:var(--red); }
+
+  .quiz-next-btn{
+    width:100%;
+    margin-top:14px;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:16px;
+    padding:14px;
+    border-radius:12px;
+    cursor:pointer;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .15s ease;
+  }
+  .quiz-next-btn.show{ opacity:1; pointer-events:auto; }
+
+  /* ================= MATCH BUTTON (selection screen) ================= */
+  .match-btn{
+    border-color:var(--amber);
+    background:var(--amber-tint);
+    color:#8A5A1C;
+  }
+  .match-btn:not([disabled]):hover{ border-color:var(--amber); }
+
+  /* ================= MATCHING GAME VIEW ================= */
+  .match-hint{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin:0 0 14px;
+    font-family:var(--font-body);
+  }
+  .match-columns{
+    display:flex;
+    gap:10px;
+    flex:1;
+    min-height:0;
+  }
+  .match-col{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+    overflow-y:auto;
+    padding:2px 2px 12px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .match-card{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    min-height:58px;
+    width:100%;
+    text-align:left;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    border-radius:12px;
+    padding:12px 12px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .08s ease, opacity .2s ease;
+  }
+  .match-card:not(.correct):active{ transform:scale(.97); }
+  .match-kanji-text{
+    font-family:var(--font-jp);
+    font-weight:700;
+    font-size:16.5px;
+    color:var(--ink);
+    line-height:1.3;
+    word-break:break-word;
+  }
+  .match-furi-text{
+    font-family:var(--font-jp);
+    font-weight:400;
+    font-size:11px;
+    color:var(--ink-faint);
+    margin-top:2px;
+  }
+  .match-meaning-text{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:13.5px;
+    color:var(--ink);
+    line-height:1.35;
+  }
+  .match-card.selected{
+    border-color:var(--accent);
+    background:var(--accent-tint);
+    box-shadow:0 0 0 1px var(--accent) inset;
+  }
+  .match-card.correct{
+    border-color:var(--green);
+    background:var(--green-tint);
+    opacity:.5;
+    cursor:default;
+    pointer-events:none;
+  }
+  .match-card.wrong{
+    border-color:var(--red);
+    background:var(--red-tint);
+  }
+
+  /* ================= CROSSWORD BUTTON (selection screen) ================= */
+  .crossword-btn{
+    border-color:var(--accent-dark);
+    background:var(--accent-tint);
+    color:var(--accent-dark);
+  }
+  .crossword-btn:not([disabled]):hover{ border-color:var(--accent-dark); }
+
+  /* ================= CROSSWORD (TEKA-TEKI SILANG) VIEW ================= */
+  .xw-board-wrap{
+    display:flex;
+    justify-content:center;
+    overflow-x:auto;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    max-height:min(48vh, 400px);
+    padding:8px 0 12px;
+  }
+  .xw-board{
+    display:grid;
+    gap:2px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:2px;
+    width:max-content;
+    flex:none;
+  }
+  .xw-cell{
+    position:relative;
+    background:var(--surface);
+    border-radius:3px;
+  }
+  .xw-blank{
+    background:var(--surface-alt);
+    border-radius:3px;
+  }
+  .xw-num{
+    position:absolute;
+    top:1px; left:2px;
+    font-size:8px;
+    font-family:var(--font-display);
+    font-weight:700;
+    color:var(--ink-faint);
+    line-height:1;
+    pointer-events:none;
+  }
+  .xw-input{
+    width:100%; height:100%;
+    border:none;
+    background:transparent;
+    text-align:center;
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink);
+    text-transform:uppercase;
+    padding:0;
+    outline:none;
+    border-radius:3px;
+  }
+  .xw-input:focus{ background:var(--accent-tint); }
+  .xw-input.correct{ color:var(--green); }
+  .xw-input.wrong{ color:var(--red); }
+
+  .xw-actions{
+    display:flex;
+    gap:8px;
+    margin:4px 0 8px;
+  }
+  .xw-action-btn{
+    flex:1;
+    border:1px solid var(--line);
+    background:var(--surface);
+    color:var(--ink);
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:12.5px;
+    padding:10px 4px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .xw-action-btn:active{ transform:scale(.98); }
+  #xwCheckBtn{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+
+  .xw-feedback{
+    text-align:center;
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:13.5px;
+    margin:0 0 12px;
+    min-height:18px;
+  }
+  .xw-feedback.correct{ color:var(--green); }
+  .xw-feedback.wrong{ color:var(--red); }
+
+  .xw-clues{
+    display:flex;
+    gap:14px;
+    padding:8px 2px 20px;
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    border-top:1px solid var(--line);
+  }
+  .xw-clue-col{ flex:1; min-width:0; padding-top:10px; }
+  .xw-clue-heading{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:13.5px;
+    color:var(--accent-dark);
+    margin-bottom:8px;
+  }
+  .xw-clue-item{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    margin-bottom:6px;
+  }
+  .xw-clue-num{ font-weight:700; color:var(--ink); }
+  .xw-clue-jp{ font-family:var(--font-jp); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="brand">
+    <span class="brand-mark">単語</span>
+    <span class="brand-text">Kosakata SSW Pengolah Makanan</span>
+  </div>
+
+  <!-- ===================== SELECTION VIEW ===================== -->
+  <section id="view-select" class="view active">
+    <div class="hero">
+      <h1>Hafalan kotoba,<br>siap kerja.</h1>
+      <p>Latihan kosakata bahasa Jepang untuk Pekerja Migran Berketerampilan Spesifik (SSW) bidang Pengolahan Makanan &amp; Minuman — Modul Pengolahan Makanan 2024, lengkap dengan nomor halaman modul.</p>
+    </div>
+
+    <div class="mode-switch" id="modeSwitch">
+      <button type="button" data-mode="jp-id" class="active">漢字 → Indonesia</button>
+      <button type="button" data-mode="id-jp">Indonesia → 漢字</button>
+    </div>
+
+    <div class="section-label">Pilih bab</div>
+    <div class="bab-list" id="babList"></div>
+
+    <div class="quick-row">
+      <button type="button" id="btnAll">Pilih semua</button>
+      <button type="button" id="btnNone">Kosongkan</button>
+      <button type="button" id="btnShuffleToggle" aria-pressed="true">🔀 Acak: Aktif</button>
+    </div>
+
+    <div class="range-panel" id="rangePanel">
+      <div class="range-panel-label">📄 Pilih halaman modul (nonaktifkan acak untuk pakai ini)</div>
+      <div class="range-panel-sub">Ketuk satu atau beberapa halaman untuk dilatih, sesuai halaman di modul.</div>
+      <div class="range-chips" id="rangeChips"></div>
+      <div class="range-custom">
+        <span class="range-custom-label">Hal.</span>
+        <input type="number" id="rangeFromInput" min="1" placeholder="dari">
+        <span class="range-dash">–</span>
+        <input type="number" id="rangeToInput" min="1" placeholder="sampai">
+        <button type="button" id="rangeApplyBtn">Terapkan</button>
+      </div>
+      <div class="range-status empty" id="rangeStatus">
+        <span id="rangeStatusText"></span>
+        <button type="button" id="rangeResetBtn">Reset</button>
+      </div>
+
+      <div class="range-custom">
+        <button type="button" id="countShuffleBtn" aria-pressed="false">🔀 Acak jumlah ini</button>
+        <button type="button" id="countApplyBtn">Terapkan</button>
+      </div>
+      <div class="range-status empty" id="countStatus">
+        <span id="countStatusText"></span>
+        <button type="button" id="countResetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button class="start-btn" id="startBtn" disabled>🔄 Mulai Flashcard</button>
+    <button class="quiz-btn" id="quizBtn" disabled>🧠 Mulai Pilihan Ganda</button>
+    <button class="quiz-btn match-btn" id="matchBtn" disabled>🧩 Mulai Mencocokkan</button>
+    <button class="quiz-btn crossword-btn" id="crosswordBtn" disabled>✏️ Mulai Teka-Teki Silang</button>
+    <div class="start-hint" id="startHint">Pilih minimal satu bab untuk mulai</div>
+    <button class="list-open-btn" id="openListBtn">📖 Lihat Daftar Kosakata</button>
+  </section>
+
+  <!-- ===================== PRACTICE VIEW ===================== -->
+  <section id="view-practice" class="view">
+    <div class="practice-top">
+      <button class="back-btn" id="quitBtn" aria-label="Kembali">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="progress-wrap">
+        <div class="progress-labels">
+          <span id="sectionLabel">Bab 1</span>
+          <span><b id="progNum">0</b>/<span id="progTotal">0</span></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="hint-badge">👆 ketuk untuk membalik</div>
+      <!-- cards injected here -->
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn again" id="btnAgain">
+        <span class="ctrl-circle">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg>
+        </span>
+        Coba lagi
+      </button>
+      <button class="ctrl-btn unseen" id="btnUnseen">
+        <span class="ctrl-circle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v5m0 3.5h.01" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+        </span>
+        Belum pernah
+      </button>
+      <button class="ctrl-btn known" id="btnKnown">
+        <span class="ctrl-circle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        Ingat
+      </button>
+    </div>
+  </section>
+
+  <!-- ===================== SUMMARY VIEW ===================== -->
+  <section id="view-summary" class="view">
+    <div class="summary">
+      <div class="badge">合格</div>
+      <h2>Sesi selesai!</h2>
+      <div class="big-stat" id="sumPercent">0%</div>
+      <p id="sumDetail">0 kata dikuasai dalam 1 putaran</p>
+      <div class="summary-actions">
+        <button class="btn-ghost" id="sumBackBtn">Pilih Bab Lain</button>
+        <button class="btn-solid" id="sumAgainBtn">Ulangi Sesi</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== QUIZ VIEW ===================== -->
+  <section id="view-quiz" class="view">
+    <div class="practice-top">
+      <button class="back-btn" id="quizQuitBtn" aria-label="Kembali">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="progress-wrap">
+        <div class="progress-labels">
+          <span>Pilihan Ganda</span>
+          <span><b id="quizProgNum">0</b>/<span id="quizProgTotal">0</span></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="quizProgFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback"></div>
+    <button class="quiz-next-btn" id="quizNextBtn">Lanjut →</button>
+  </section>
+
+  <!-- ===================== MATCHING GAME VIEW ===================== -->
+  <section id="view-match" class="view" style="min-height:0;">
+    <div class="practice-top">
+      <button class="back-btn" id="matchQuitBtn" aria-label="Kembali">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="progress-wrap">
+        <div class="progress-labels">
+          <span>Mencocokkan</span>
+          <span><b id="matchProgNum">0</b>/<span id="matchProgTotal">0</span></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="matchProgFill" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="match-hint">Ketuk satu kanji, lalu ketuk arti bahasa Indonesia yang cocok.</div>
+    <div class="match-columns">
+      <div class="match-col" id="matchLeftCol"></div>
+      <div class="match-col" id="matchRightCol"></div>
+    </div>
+  </section>
+
+  <!-- ===================== CROSSWORD (TEKA-TEKI SILANG) VIEW ===================== -->
+  <section id="view-crossword" class="view" style="min-height:0;">
+    <div class="practice-top">
+      <button class="back-btn" id="crosswordQuitBtn" aria-label="Kembali">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="progress-wrap">
+        <div class="progress-labels">
+          <span>Teka-Teki Silang</span>
+          <span><b id="xwFilledNum">0</b>/<span id="xwTotalNum">0</span></span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="xwProgFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="xw-board-wrap">
+      <div class="xw-board" id="xwBoard"></div>
+    </div>
+
+    <div class="xw-actions">
+      <button type="button" class="xw-action-btn" id="xwCheckBtn">✅ Cek Jawaban</button>
+      <button type="button" class="xw-action-btn" id="xwHintBtn">💡 Bantu 1 Huruf</button>
+      <button type="button" class="xw-action-btn" id="xwNewBtn">🔄 Puzzle Baru</button>
+    </div>
+    <div class="xw-feedback" id="xwFeedback"></div>
+
+    <div class="xw-clues" id="xwClues"></div>
+  </section>
+
+  <!-- ===================== VOCAB LIST VIEW ===================== -->
+  <section id="view-list" class="view" style="min-height:0;">
+    <div class="list-top">
+      <button class="back-btn" id="listBackBtn" aria-label="Kembali">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <h1>Daftar Kosakata</h1>
+    </div>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="listSearch" placeholder="Cari kanji, furigana, arti, atau halaman (mis. 7)...">
+    </div>
+    <div class="list-scroll" id="listScroll"></div>
+  </section>
+
+</div>
+
+<script>
+const VOCAB_DATA = [{"id":"b1-1","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"飲料","f":"いんりょう","m":"minuman","p":"2","n":1},{"id":"b1-2","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"食料品","f":"しょくりょうひん","m":"bahan makanan","p":"2","n":2},{"id":"b1-3","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"欠かせません","f":"かかせません","m":"ini penting","p":"2","n":3},{"id":"b1-4","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"製造する","f":"せいぞうする","m":"pembuatan","p":"2","n":4},{"id":"b1-5","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"飲食料品製造業","f":"いんしょくりょうひんせいぞうぎょう","m":"industri manufaktur makanan dan minuman","p":"2","n":5},{"id":"b1-6","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"ハムソーセージ","f":"ハムソーセージ","m":"sosis daging","p":"2","n":6},{"id":"b1-7","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"魚の缶詰","f":"さかなのかんづめ","m":"ikan kaleng","p":"2","n":7},{"id":"b1-8","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"惣菜","f":"そうざい","m":"makanan pendamping","p":"2","n":8},{"id":"b1-9","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"冷凍食品","f":"れいとうしょくひん","m":"makanan beku","p":"2","n":9},{"id":"b1-10","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"農林水産省","f":"のうりんすいさんしょう","m":"Kementerian Pertanian, Kehutanan dan Perikanan","p":"2","n":10},{"id":"b1-11","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"統計","f":"とうけい","m":"statistik","p":"2","n":11},{"id":"b1-12","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"国内生産額","f":"こくないせいさんがく","m":"jumlah produksi dalam negeri","p":"2","n":12},{"id":"b1-13","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"数年","f":"すうねん","m":"beberapa tahun","p":"2","n":13},{"id":"b1-14","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"兆円","f":"ちょうえん","m":"triliun yen","p":"2","n":14},{"id":"b1-15","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"特定技能1号","f":"とくていぎのう１ごう","m":"keahlian khusus tingkat 1","p":"3","n":15},{"id":"b1-16","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"在留資格者","f":"ざいりゅうしかくしゃ","m":"orang berstatus penduduk","p":"3","n":16},{"id":"b1-17","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"業種","f":"ぎょうしゅ","m":"industri","p":"3","n":17},{"id":"b1-18","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"食品衛生","f":"しょくひんえいせい","m":"kebersihan makanan","p":"3","n":18},{"id":"b1-19","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"労働安全","f":"ろうどうあんぜん","m":"keselamatan kerja","p":"3","n":19},{"id":"b1-20","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"知識","f":"ちしき","m":"pengetahuan","p":"3","n":20},{"id":"b1-21","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"技能","f":"ぎのう","m":"keahlian","p":"3","n":21},{"id":"b1-22","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"必要","f":"ひつよう","m":"membutuhkan","p":"3","n":22},{"id":"b1-23","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"命","f":"いのち","m":"kehidupan","p":"3","n":23},{"id":"b1-24","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"生命","f":"せいめい","m":"kehidupan","p":"3","n":24},{"id":"b1-25","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"守る","f":"まもる","m":"melindungi","p":"3","n":25},{"id":"b1-26","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"信用","f":"しんよう","m":"kredibilitas","p":"3","n":26},{"id":"b1-27","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"安全保護具","f":"あんぜんほごぐ","m":"peralatan perlindungan keselamatan","p":"3","n":27},{"id":"b1-28","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"着用","f":"ちゃくよう","m":"memakai","p":"3","n":28},{"id":"b1-29","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"作業者","f":"さぎょうしゃ","m":"pekerja","p":"3","n":29},{"id":"b1-30","bab":1,"section":"Bab 1: Industri Pengolahan Makanan","k":"健康","f":"けんこう","m":"kesehatan","p":"3","n":30},{"id":"b2-1","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"基本","f":"きほん","m":"dasar","p":"5","n":1},{"id":"b2-2","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"行動","f":"こうどう","m":"tindakan","p":"5","n":2},{"id":"b2-3","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"清潔","f":"せいけつ","m":"kebersihan","p":"5","n":3},{"id":"b2-4","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"設備","f":"せつび","m":"fasilitas","p":"5","n":4},{"id":"b2-5","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"保管","f":"ほかん","m":"penyimpanan","p":"5","n":5},{"id":"b2-6","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"共通する","f":"きょうつうする","m":"memiliki kesamaan","p":"5","n":6},{"id":"b2-7","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"一般","f":"いっぱん","m":"umum","p":"5","n":7},{"id":"b2-8","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"重要","f":"じゅうよう","m":"penting","p":"5","n":8},{"id":"b2-9","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"施設","f":"しせつ","m":"fasilitas","p":"5","n":9},{"id":"b2-10","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"種類","f":"しゅるい","m":"jenis","p":"5","n":10},{"id":"b2-11","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"特徴","f":"とくちょう","m":"fitur","p":"5","n":11},{"id":"b2-12","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"応じて","f":"おうじて","m":"bergantung kepada","p":"5","n":12},{"id":"b2-13","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"工程","f":"こうてい","m":"proses","p":"5","n":13},{"id":"b2-14","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"組み合わせて","f":"くみあわせて","m":"dalam kombinasi","p":"5","n":14},{"id":"b2-15","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"危害要因","f":"きがいよういん","m":"faktor bahaya","p":"6","n":1},{"id":"b2-16","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"含まれない","f":"ふくまれない","m":"tidak termasuk","p":"6","n":2},{"id":"b2-17","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"活動","f":"かつどう","m":"aktivitas","p":"6","n":3},{"id":"b2-18","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"学習する","f":"がくしゅうする","m":"mempelajari","p":"6","n":4},{"id":"b2-19","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"物理的危害要因","f":"ぶつりてききがいよういん","m":"bahaya fisik","p":"7","n":1},{"id":"b2-20","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"化学的危害要因","f":"かがくてききがいよういん","m":"bahaya kimia","p":"7","n":2},{"id":"b2-21","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"生物的危害要因","f":"せいぶつてききがいよういん","m":"bahaya biologis","p":"7","n":3},{"id":"b2-22","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"硬い","f":"かたい","m":"keras","p":"7","n":4},{"id":"b2-23","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"歯が欠ける","f":"はがかける","m":"gigi terkelupas","p":"7","n":5},{"id":"b2-24","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"尖って","f":"とがって","m":"Lancip","p":"7","n":6},{"id":"b2-25","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"傷","f":"きず","m":"menggores/tergores","p":"7","n":7},{"id":"b2-26","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"代表的な","f":"だいひょうてき","m":"perwakilan","p":"7","n":8},{"id":"b2-27","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"金属片","f":"きんぞくへん","m":"serpihan logam","p":"7","n":9},{"id":"b2-28","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ガラス片","f":"ガラスへん","m":"sepotong kaca","p":"7","n":10},{"id":"b2-29","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"プラスチック片","f":"プラスチックへん","m":"potongan plastik","p":"7","n":11},{"id":"b2-30","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"石","f":"いし","m":"batu","p":"7","n":12},{"id":"b2-31","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"原材料","f":"げんざいりょう","m":"bahan baku","p":"7","n":13},{"id":"b2-32","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"取り除く","f":"とりのぞく","m":"menghapus","p":"7","n":14},{"id":"b2-33","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"異物","f":"いぶつ","m":"benda asing","p":"7","n":15},{"id":"b2-34","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"卵の殻","f":"たまごのから","m":"kulit telur","p":"7","n":16},{"id":"b2-35","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"硬質異物","f":"こうしついぶつ","m":"benda asing yang keras","p":"7","n":17},{"id":"b2-36","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"混入","f":"こんにゅう","m":"kontaminasi","p":"7","n":18},{"id":"b2-37","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"防止","f":"ぼうし","m":"pencegahan","p":"7","n":19},{"id":"b2-38","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"土","f":"つち","m":"tanah","p":"7","n":20},{"id":"b2-39","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"小石","f":"こいし","m":"kerikil","p":"7","n":21},{"id":"b2-40","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"洗浄","f":"せんじょう","m":"Pencucian","p":"7","n":22},{"id":"b2-41","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"選別","f":"せんべつ","m":"penyortiran","p":"7","n":23},{"id":"b2-42","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"下処理","f":"したしょり","m":"persiapan","p":"7","n":24},{"id":"b2-43","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"野菜の根の部分","f":"やさいのねのぶぶん","m":"bagian akar sayuran","p":"7","n":25},{"id":"b2-44","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"貝の殻","f":"かいのから","m":"kerang laut","p":"7","n":26},{"id":"b2-45","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"魚のエラ","f":"さかなのえら","m":"insang ikan","p":"7","n":27},{"id":"b2-46","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"骨","f":"ほね","m":"tulang","p":"7","n":28},{"id":"b2-47","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"蓋","f":"ふた","m":"tutup","p":"8","n":1},{"id":"b2-48","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"紙片","f":"しへん","m":"selembar kertas","p":"8","n":2},{"id":"b2-49","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"不潔","f":"ふけつ","m":"kekotoran","p":"8","n":3},{"id":"b2-50","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"不衛生","f":"ふえいせい","m":"tidak sehat","p":"8","n":4},{"id":"b2-51","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"苦情（クレーム）","f":"くじょう","m":"keluhan (klaim)","p":"8","n":5},{"id":"b2-52","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"返品","f":"へんぴん","m":"kembali","p":"8","n":6},{"id":"b2-53","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"会社の信用","f":"かいしゃのしんよう","m":"kepercayaan perusahaan","p":"8","n":7},{"id":"b2-54","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"落とす","f":"おとす","m":"menjatuhkan","p":"8","n":8},{"id":"b2-55","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"物質","f":"ぶっしつ","m":"bahan","p":"8","n":9},{"id":"b2-56","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ヒスタミン","f":"","m":"histamin","p":"8","n":10},{"id":"b2-57","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"じゃがいもの芽","f":"じゃがいものめ","m":"kecambah kentang","p":"8","n":11},{"id":"b2-58","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ソラニン","f":"","m":"solanin","p":"8","n":12},{"id":"b2-59","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"殺菌剤","f":"さっきんざい","m":"fungisida","p":"8","n":13},{"id":"b2-60","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"薬剤","f":"やくざい","m":"obat","p":"8","n":14},{"id":"b2-61","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"化学物質","f":"かがくぶっしつ","m":"bahan kimia","p":"8","n":15},{"id":"b2-62","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"反応","f":"はんのう","m":"reaksi","p":"8","n":16},{"id":"b2-63","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"過剰","f":"かじょう","m":"kelebihan","p":"8","n":17},{"id":"b2-64","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"症状","f":"しょうじょう","m":"gejala","p":"8","n":18},{"id":"b2-65","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"かゆみ","f":"","m":"gatal","p":"8","n":19},{"id":"b2-66","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"じんましん","f":"","m":"sarang lebah","p":"8","n":20},{"id":"b2-67","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"唇","f":"くちびる","m":"bibir","p":"8","n":21},{"id":"b2-68","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"まぶたの腫れ","f":"まぶたのはれ","m":"pembengkakan kelopak mata","p":"8","n":22},{"id":"b2-69","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"法律","f":"ほうりつ","m":"hukum","p":"8","n":23},{"id":"b2-70","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"発症数","f":"はっしょうすう","m":"jumlah kasus","p":"8","n":24},{"id":"b2-71","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"加工食品","f":"かこうしょくひん","m":"makanan olahan","p":"8","n":25},{"id":"b2-72","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"表示","f":"ひょうじ","m":"menampilkan","p":"8","n":26},{"id":"b2-73","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"義務","f":"ぎむ","m":"tugas","p":"8","n":27},{"id":"b2-74","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"推奨","f":"すいしょう","m":"rekomendasi","p":"8","n":28},{"id":"b2-75","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"準ずるもの","f":"じゅんずるもの","m":"setara","p":"8","n":29},{"id":"b2-76","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"品目","f":"ひんもく","m":"barang","p":"9","n":1},{"id":"b2-77","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"くるみ","f":"","m":"kenari","p":"9","n":2},{"id":"b2-78","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"移される","f":"うつされる","m":"dipindahkan","p":"9","n":3},{"id":"b2-79","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"調理","f":"ちょうり","m":"memasak","p":"9","n":4},{"id":"b2-80","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"まな板","f":"まないた","m":"talenan","p":"9","n":5},{"id":"b2-81","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"包丁","f":"ほうちょう","m":"pisau","p":"9","n":6},{"id":"b2-82","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ゆで卵","f":"ゆでたまご","m":"telur rebus","p":"9","n":7},{"id":"b2-83","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"洗浄剤","f":"せんじょうざい","m":"sabun cuci","p":"9","n":8},{"id":"b2-84","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"残らない","f":"のこらない","m":"tidak ketinggalan","p":"9","n":9},{"id":"b2-85","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"流す","f":"ながす","m":"mengalir","p":"9","n":10},{"id":"b2-86","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"獲った","f":"とった","m":"tertangkap","p":"9","n":11},{"id":"b2-87","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"条件","f":"じょうけん","m":"kondisi","p":"9","n":12},{"id":"b2-88","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"マグロ","f":"","m":"tuna","p":"9","n":13},{"id":"b2-89","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"イワシ","f":"","m":"sarden","p":"9","n":14},{"id":"b2-90","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"サバ","f":"","m":"ikan kembung","p":"9","n":15},{"id":"b2-91","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"赤身魚","f":"あかみざかな","m":"ikan merah","p":"10","n":1},{"id":"b2-92","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"似た","f":"にた","m":"sama","p":"10","n":2},{"id":"b2-93","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"増える","f":"ふえる","m":"meningkatkan","p":"10","n":3},{"id":"b2-94","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"じゃがいもの芽","f":"じゃがいものめ","m":"kecambah/tunas kentang","p":"10","n":4},{"id":"b2-95","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"吐き気","f":"はきけ","m":"mual","p":"10","n":5},{"id":"b2-96","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"おう吐","f":"おうと","m":"muntah","p":"10","n":6},{"id":"b2-97","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"下痢","f":"げり","m":"diare","p":"10","n":7},{"id":"b2-98","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"腹痛","f":"ふくつう","m":"sakit perut","p":"10","n":8},{"id":"b2-99","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"頭痛","f":"ずつう","m":"sakit kepala","p":"10","n":9},{"id":"b2-100","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"食中毒","f":"しょくちゅうどく","m":"keracunan makanan","p":"10","n":10},{"id":"b2-101","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"取り除く","f":"とりのぞく","m":"menghapus","p":"10","n":11},{"id":"b2-102","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"防ぐ","f":"ふせぐ","m":"mencegah","p":"10","n":12},{"id":"b2-103","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"細菌","f":"さいきん","m":"bakteri","p":"10","n":13},{"id":"b2-104","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"寄生虫","f":"きせいちゅう","m":"parasit","p":"10","n":14},{"id":"b2-105","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"カビ","f":"","m":"jamur","p":"10","n":15},{"id":"b2-106","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"病原","f":"びょうげん","m":"Patogen (organisme penyebab penyakit)","p":"10","n":16},{"id":"b2-107","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"顕微鏡","f":"けんびきょう","m":"mikroskop","p":"10","n":17},{"id":"b2-108","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"生き物","f":"いきもの","m":"makhluk hidup","p":"10","n":18},{"id":"b2-109","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"発症する","f":"はっしょうする","m":"mengembangkan gejala","p":"11","n":1},{"id":"b2-110","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"鶏卵","f":"けいらん","m":"telur ayam","p":"11","n":2},{"id":"b2-111","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"魚介類","f":"ぎょかいるい","m":"makanan laut","p":"11","n":3},{"id":"b2-112","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"激しい下痢","f":"はげしいげり","m":"diare parah","p":"11","n":4},{"id":"b2-113","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"毒素","f":"どくそ","m":"toksin/racun","p":"11","n":5},{"id":"b2-114","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"井戸水","f":"いどみず","m":"air sumur","p":"11","n":6},{"id":"b2-115","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"血便","f":"けつべん","m":"tinja berdarah","p":"11","n":7},{"id":"b2-116","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"皮膚","f":"ひふ","m":"kulit","p":"11","n":8},{"id":"b2-117","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"傷","f":"きず","m":"menggores","p":"11","n":9},{"id":"b2-118","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"芽胞","f":"がほう","m":"spora","p":"11","n":10},{"id":"b2-119","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"呼吸困難","f":"こきゅうこんなん","m":"sulit bernafas","p":"11","n":11},{"id":"b2-120","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"発生","f":"はっせい","m":"kejadian","p":"12","n":1},{"id":"b2-121","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"食中毒","f":"しょくちゅうどく","m":"keracunan makanan","p":"12","n":2},{"id":"b2-122","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"予防","f":"よぼう","m":"pencegahan","p":"12","n":3},{"id":"b2-123","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"つけない","f":"","m":"jangan memakainya","p":"12","n":4},{"id":"b2-124","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"増やさない","f":"ふやさない","m":"jangan menambah","p":"12","n":5},{"id":"b2-125","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"やっつける（ころす）","f":"","m":"kekalahan (membunuh)","p":"12","n":6},{"id":"b2-126","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"作業開始前","f":"さぎょうかいしまえ","m":"sebelum mulai bekerja","p":"12","n":7},{"id":"b2-127","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"温度","f":"おんど","m":"suhu","p":"12","n":8},{"id":"b2-128","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"水分","f":"すいぶん","m":"kelembaban","p":"12","n":9},{"id":"b2-129","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"栄養","f":"えいよう","m":"nutrisi","p":"12","n":10},{"id":"b2-130","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"湿度","f":"しつど","m":"kelembaban","p":"12","n":11},{"id":"b2-131","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"環境","f":"かんきょう","m":"lingkungan","p":"12","n":12},{"id":"b2-132","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"好み","f":"このみ","m":"menyukai","p":"12","n":13},{"id":"b2-133","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"加熱","f":"かねつ","m":"pemanasan","p":"12","n":14},{"id":"b2-134","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"厳しい","f":"きびしい","m":"ketat","p":"13","n":1},{"id":"b2-135","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"濃度の薬剤","f":"のうどのやくざい","m":"obat konsentrasi","p":"13","n":2},{"id":"b2-136","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"食品全体","f":"しょくひんぜんたい","m":"semua makanan","p":"13","n":3},{"id":"b2-137","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"冷やす","f":"ひやす","m":"dingin","p":"13","n":4},{"id":"b2-138","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"代表的","f":"だいひょうてき","m":"perwakilan","p":"13","n":5},{"id":"b2-139","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"牡蠣","f":"かき","m":"tiram","p":"13","n":6},{"id":"b2-140","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"汚染","f":"おせん","m":"polusi","p":"13","n":7},{"id":"b2-141","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"大便","f":"だいべん","m":"kotoran","p":"13","n":8},{"id":"b2-142","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"吐いた","f":"はいた","m":"muntah","p":"13","n":9},{"id":"b2-143","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"次亜塩素酸ナトリウム","f":"じあえんそさん","m":"Natrium hipoklorit","p":"13","n":10},{"id":"b2-144","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"溶液","f":"ようえき","m":"larutan","p":"13","n":11},{"id":"b2-145","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"布巾","f":"ふきん","m":"kain untuk pencuci piring","p":"13","n":12},{"id":"b2-146","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"原則","f":"げんそく","m":"prinsip","p":"13","n":13},{"id":"b2-147","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"対策","f":"たいさく","m":"tindakan","p":"13","n":14},{"id":"b2-148","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"有効","f":"ゆうこう","m":"efektif","p":"13","n":15},{"id":"b2-149","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"食品製造工場","f":"しょくひんせいぞうこうじょう","m":"pabrik pembuatan makanan","p":"14","n":1},{"id":"b2-150","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"持ち込まない","f":"もちこまない","m":"jangan membawanya masuk","p":"14","n":2},{"id":"b2-151","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"感染","f":"かんせん","m":"infeksi","p":"14","n":3},{"id":"b2-152","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"消毒","f":"しょうどく","m":"desinfeksi","p":"14","n":4},{"id":"b2-153","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"おう吐物","f":"おうとぶつ","m":"muntah","p":"14","n":5},{"id":"b2-154","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"専門用具","f":"せんもんようぐ","m":"alat khusus","p":"14","n":6},{"id":"b2-155","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"処理する","f":"しょりする","m":"proses","p":"14","n":7},{"id":"b2-156","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"広げない","f":"ひろげない","m":"jangan menyebar","p":"14","n":8},{"id":"b2-157","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"カビ","f":"","m":"jamur","p":"14","n":9},{"id":"b2-158","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"増殖","f":"ぞうしょく","m":"berkembang biak","p":"14","n":10},{"id":"b2-159","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"胞子","f":"ほうし","m":"spora","p":"14","n":11},{"id":"b2-160","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"存在","f":"そんざい","m":"adanya","p":"14","n":12},{"id":"b2-161","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"完全","f":"かんぜん","m":"Sempurna","p":"14","n":13},{"id":"b2-162","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"豆","f":"まめ","m":"kacang polong","p":"14","n":14},{"id":"b2-163","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"穀類","f":"こくるい","m":"biji-bijian","p":"14","n":15},{"id":"b2-164","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"生えた","f":"はえた","m":"dewasa","p":"14","n":16},{"id":"b2-165","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"寄生虫","f":"きせいちゅう","m":"parasit","p":"14","n":17},{"id":"b2-166","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"表面","f":"ひょうめん","m":"permukaan","p":"14","n":18},{"id":"b2-167","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"体内","f":"たいない","m":"di dalam tubuh","p":"14","n":19},{"id":"b2-168","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"アニサキス","f":"","m":"anisakis","p":"14","n":20},{"id":"b2-169","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"魚介類","f":"ぎょかいるい","m":"makanan laut","p":"14","n":21},{"id":"b2-170","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"生","f":"なま","m":"mentah","p":"14","n":22},{"id":"b2-171","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"共通","f":"きょうつう","m":"umum","p":"15","n":1},{"id":"b2-172","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"整 理","f":"せいり","m":"meringkas","p":"15","n":2},{"id":"b2-173","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"整頓","f":"せい とん","m":"merapikan","p":"15","n":3},{"id":"b2-174","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"清掃","f":"せいそう","m":"pembersihan","p":"15","n":4},{"id":"b2-175","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"清潔","f":"せいけつ","m":"merawat","p":"15","n":5},{"id":"b2-176","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"習慣付","f":"しゅうかんづけ","m":"membiasakan","p":"15","n":6},{"id":"b2-177","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"しつけ","f":"","m":"disiplin","p":"15","n":7},{"id":"b2-178","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"取出せる","f":"と りだせる","m":"bisa dikeluarkan","p":"15","n":8},{"id":"b2-179","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"順序","f":"じゅんじょ","m":"urutan","p":"15","n":9},{"id":"b2-180","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"数量","f":"すうりょう","m":"kuantitas / jumlah","p":"15","n":10},{"id":"b2-181","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"表示","f":"ひょうじ","m":"menampilkan","p":"15","n":11},{"id":"b2-182","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"磨く","f":"みがく","m":"menggosok","p":"15","n":12},{"id":"b2-183","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"拭いたり","f":"ふいたり","m":"mengelap","p":"15","n":13},{"id":"b2-184","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"見た目","f":"みため","m":"terlihat","p":"15","n":14},{"id":"b2-185","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"とおりに","f":"","m":"sesuai / berdasarkan","p":"15","n":15},{"id":"b2-186","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"実行","f":"じっこう","m":"eksekusi","p":"15","n":16},{"id":"b2-187","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"保つ","f":"たもつ","m":"menjaga","p":"15","n":17},{"id":"b2-188","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"手指","f":"てゆび","m":"jari","p":"15","n":18},{"id":"b2-189","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"役立ちます","f":"やくだちます","m":"bermanfaat","p":"16","n":1},{"id":"b2-190","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"触れる","f":"ふれる","m":"menyentuh","p":"16","n":2},{"id":"b2-191","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"交差汚染","f":"こうさおせん","m":"kontaminasi silang","p":"16","n":3},{"id":"b2-192","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"使い分け","f":"つかいわけ","m":"Penggunaan yang tepat","p":"16","n":4},{"id":"b2-193","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"通常","f":"つうじょう","m":"biasanya","p":"16","n":5},{"id":"b2-194","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"清潔作業区域","f":"せいけつさぎょうくいき","m":"area kerja yang bersih","p":"16","n":6},{"id":"b2-195","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"準清潔作業区域","f":"じゅんせいけつさぎょうくいき","m":"Area kerja semi-bersih","p":"16","n":7},{"id":"b2-196","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"汚染作業区域","f":"おせんさぎょうくいき","m":"area kerja yang terkontaminasi","p":"16","n":8},{"id":"b2-197","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ゾーニング","f":"","m":"zonasi","p":"16","n":9},{"id":"b2-198","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"区分衛生管理","f":"くぶんえいせいかんり","m":"manajemen kebersihan terpisah","p":"16","n":10},{"id":"b2-199","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"取り扱い","f":"とりあつかい","m":"penanganan","p":"16","n":11},{"id":"b2-200","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"下処理","f":"したしょり","m":"Persiapan","p":"16","n":12},{"id":"b2-201","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"出荷","f":"しゅっか","m":"pengiriman","p":"16","n":13},{"id":"b2-202","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"詰めた","f":"つめた","m":"diisi","p":"16","n":14},{"id":"b2-203","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"通らない","f":"とおらない","m":"tidak melewati","p":"17","n":1},{"id":"b2-204","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ほこり","f":"","m":"debu","p":"17","n":2},{"id":"b2-205","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"不要","f":"ふよう","m":"Tidak perlu","p":"17","n":3},{"id":"b2-206","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"通路","f":"つうろ","m":"lorong","p":"17","n":4},{"id":"b2-207","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"定期的","f":"ていきてき","m":"Secara teratur","p":"17","n":5},{"id":"b2-208","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ネズミ","f":"","m":"tikus","p":"17","n":6},{"id":"b2-209","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"虫","f":"むし","m":"serangga","p":"17","n":7},{"id":"b2-210","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"状況","f":"じょうきょう","m":"situasi","p":"17","n":8},{"id":"b2-211","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"排水溝","f":"はいすいこう","m":"mengeringkan","p":"17","n":9},{"id":"b2-212","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ミキサー","f":"","m":"mixer","p":"17","n":10},{"id":"b2-213","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"スライサー","f":"","m":"alat pengiris","p":"17","n":11},{"id":"b2-214","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"分解","f":"ぶんかい","m":"membongkar","p":"17","n":12},{"id":"b2-215","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"目立つ","f":"めだつ","m":"menonjol / mencolok","p":"17","n":13},{"id":"b2-216","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"直接","f":"ちょくせつ","m":"secara langsung","p":"17","n":14},{"id":"b2-217","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"乾燥する","f":"かんそうする","m":"pengeringan","p":"18","n":1},{"id":"b2-218","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"たわし","f":"","m":"penggosok","p":"18","n":2},{"id":"b2-219","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"濡れる","f":"ぬれる","m":"menjadi basah","p":"18","n":3},{"id":"b2-220","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"発生","f":"はっせい","m":"kejadian","p":"18","n":4},{"id":"b2-221","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"皮膚","f":"ひふ","m":"kulit","p":"18","n":5},{"id":"b2-222","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"保管庫","f":"ほかんこ","m":"gudang","p":"18","n":6},{"id":"b2-223","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"名称","f":"めいしょう","m":"nama","p":"18","n":7},{"id":"b2-224","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"健康","f":"けんこう","m":"kesehatan","p":"19","n":1},{"id":"b2-225","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"職場","f":"しょくば","m":"tempat kerja","p":"19","n":2},{"id":"b2-226","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"定期的","f":"ていきてき","m":"secara teratur","p":"19","n":3},{"id":"b2-227","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"健康診断","f":"けんこうしんだん","m":"cek kesehatan","p":"19","n":4},{"id":"b2-228","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"検便","f":"けんべん","m":"tes tinja","p":"19","n":5},{"id":"b2-229","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"汚れ","f":"よごれ","m":"kotor","p":"19","n":6},{"id":"b2-230","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"異物","f":"いぶつ","m":"Benda asing","p":"19","n":7},{"id":"b2-231","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"更衣室","f":"こういしつ","m":"ruang ganti","p":"19","n":8},{"id":"b2-232","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"つけ爪","f":"つけつめ","m":"kuku palsu","p":"19","n":9},{"id":"b2-233","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"イヤリング","f":"","m":"anting-anting","p":"19","n":10},{"id":"b2-234","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ネックレス","f":"","m":"kalung","p":"19","n":11},{"id":"b2-235","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ピアス","f":"","m":"anting-anting","p":"19","n":12},{"id":"b2-236","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"鏡","f":"かがみ","m":"cermin","p":"19","n":13},{"id":"b2-237","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"衣服","f":"いふく","m":"pakaian","p":"19","n":14},{"id":"b2-238","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"順序","f":"じゅんじょ","m":"urutan","p":"20","n":1},{"id":"b2-239","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"頭髪","f":"とうはつ","m":"rambut","p":"20","n":2},{"id":"b2-240","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ブラッシング","f":"","m":"menyisir","p":"20","n":3},{"id":"b2-241","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"かぶります","f":"","m":"memakai (kepala)","p":"20","n":4},{"id":"b2-242","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"留めます","f":"とめます","m":"kancingkan","p":"20","n":5},{"id":"b2-243","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"服装","f":"ふくそう","m":"pakaian","p":"20","n":6},{"id":"b2-244","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"粘着ローラ","f":"ねんちゃく","m":"rol perekat","p":"21","n":1},{"id":"b2-245","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"エアーシャワー","f":"","m":"pancuran udara","p":"21","n":2},{"id":"b2-246","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"履き物","f":"はきもの","m":"alas kaki","p":"21","n":3},{"id":"b2-247","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"履き替える","f":"はきかえる","m":"ganti sepatu","p":"21","n":4},{"id":"b2-248","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"絞り","f":"しぼり","m":"bukaan","p":"22-23","n":1},{"id":"b2-249","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"端","f":"はし","m":"akhir","p":"22-23","n":2},{"id":"b2-250","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"襟","f":"えり","m":"kerah","p":"22-23","n":3},{"id":"b2-251","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"付着","f":"ふちゃく","m":"adhesi (keadaan melekat pda benda lain)","p":"22-23","n":4},{"id":"b2-252","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"縦襟","f":"たてえり","m":"kerah vertikal","p":"22-23","n":5},{"id":"b2-253","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"エプロン","f":"","m":"celemek","p":"22-23","n":6},{"id":"b2-254","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"腕カバー","f":"うでカバー","m":"penutup lengan","p":"22-23","n":7},{"id":"b2-255","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ふかく","f":"","m":"dalam kombinasi","p":"22-23","n":8},{"id":"b2-256","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"合ってる","f":"あってる","m":"cocok","p":"22-23","n":9},{"id":"b2-257","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"袖","f":"そで","m":"lengan baju","p":"22-23","n":10},{"id":"b2-258","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"直前","f":"直前","m":"Sebelum","p":"24","n":1},{"id":"b2-259","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"盛り付け","f":"もりつけ","m":"pengaturan","p":"24","n":2},{"id":"b2-260","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"汚染作業区域","f":"おせんさぎょうくいき","m":"area kerja yang terkontaminasi","p":"24","n":3},{"id":"b2-261","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"非汚染作業区域","f":"ひおせんさぎょうくいき","m":"area kerja yang tidak terkontaminasi","p":"24","n":4},{"id":"b2-262","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"流水","f":"りゅうすい","m":"air mengalir","p":"25","n":1},{"id":"b2-263","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"せっけん","f":"","m":"sabun mandi","p":"25","n":2},{"id":"b2-264","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"指の先","f":"ゆびのさき","m":"ujung jari","p":"25","n":3},{"id":"b2-265","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"秒間程度","f":"びょうかんていど","m":"sekitar detik","p":"25","n":4},{"id":"b2-266","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"流す","f":"ながす","m":"mengalir","p":"25","n":5},{"id":"b2-267","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"乾かす","f":"かわかす","m":"kering","p":"25","n":6},{"id":"b2-268","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"両手","f":"りょうて","m":"kedua tangan","p":"25","n":7},{"id":"b2-269","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"吹付","f":"ふきつけ","m":"penyemprotan","p":"25","n":8},{"id":"b2-270","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"すりこむ","f":"","m":"gosokkan","p":"25","n":9},{"id":"b2-271","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"交換","f":"こうかん","m":"menukarkan / mengganti","p":"26","n":1},{"id":"b2-272","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"徹底","f":"てってい","m":"ketelitian","p":"26","n":2},{"id":"b2-273","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"殺菌済み","f":"さっきんずみ","m":"disterilkan","p":"26","n":3},{"id":"b2-274","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"不備","f":"ふび","m":"kekurangan","p":"26","n":4},{"id":"b2-275","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"たんや","f":"","m":"Tanya","p":"26","n":5},{"id":"b2-276","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"つば","f":"","m":"meludah","p":"26","n":6},{"id":"b2-277","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"吐いて","f":"はいて","m":"Muntah","p":"26","n":7},{"id":"b2-278","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"せき","f":"","m":"batuk","p":"26","n":8},{"id":"b2-279","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"関係","f":"かんけい","m":"hubungan","p":"26","n":9},{"id":"b2-280","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ホチキスの針","f":"はり","m":"stapler","p":"27","n":1},{"id":"b2-281","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"臭い","f":"におい","m":"bau","p":"27","n":2},{"id":"b2-282","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"品質","f":"ひんしつ","m":"kualitas","p":"27","n":3},{"id":"b2-283","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"影響","f":"えいきょう","m":"pengaruh","p":"27","n":4},{"id":"b2-284","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"香水","f":"こうすい","m":"parfum","p":"27","n":5},{"id":"b2-285","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"意図的","f":"いとてき","m":"disengaja","p":"27","n":6},{"id":"b2-286","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"記録","f":"きろく","m":"catatan","p":"27","n":7},{"id":"b2-287","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"倉庫","f":"そうこ","m":"gudang","p":"27","n":8},{"id":"b2-288","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"外部","f":"がいぶ","m":"luar","p":"27","n":9},{"id":"b2-289","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"照らし合わせて","f":"てらしあわせて","m":"dibandingkan","p":"27","n":10},{"id":"b2-290","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"届く","f":"とどく","m":"sampai","p":"27","n":11},{"id":"b2-291","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"受入検査","f":"うけいれけんさ","m":"Inspeksi / pengecekan penerimaan","p":"27","n":12},{"id":"b2-292","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"期限","f":"きげん","m":"tenggang waktu","p":"27","n":13},{"id":"b2-293","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"保存","f":"ほぞん","m":"menyimpan","p":"27","n":14},{"id":"b2-294","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"表示","f":"ひょうじ","m":"menampilkan","p":"27","n":15},{"id":"b2-295","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"品温","f":"ひんおん","m":"Suhu produk","p":"27","n":16},{"id":"b2-296","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"腐敗","f":"ふはい","m":"busuk","p":"27","n":17},{"id":"b2-297","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"包装","f":"ほうそう","m":"kemasan","p":"27","n":18},{"id":"b2-298","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"消費期限","f":"しょうひきげん","m":"tanggal habis tempo","p":"28","n":1},{"id":"b2-299","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"適切","f":"てきせつ","m":"sesuai","p":"28","n":2},{"id":"b2-300","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"返品","f":"へんぴん","m":"kembali","p":"28","n":3},{"id":"b2-301","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"交換","f":"こうかん","m":"menukarkan","p":"28","n":4},{"id":"b2-302","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"合格","f":"ごうかく","m":"lulus","p":"28","n":5},{"id":"b2-303","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"種類","f":"しゅるい","m":"jenis","p":"29","n":1},{"id":"b2-304","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"異なる","f":"ことなる","m":"berbeda","p":"29","n":2},{"id":"b2-305","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"冷凍水産物","f":"れいとうすいさんぶつ","m":"makanan laut beku","p":"29","n":3},{"id":"b2-306","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"隙間","f":"すきま","m":"celah","p":"30","n":1},{"id":"b2-307","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"詰め込んで","f":"つめこんで","m":"Penuh sesak","p":"30","n":2},{"id":"b2-308","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"全体","f":"ぜんたい","m":"seluruh","p":"30","n":3},{"id":"b2-309","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"回らない","f":"まわらない","m":"tidak berputar","p":"30","n":4},{"id":"b2-310","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"割詰めた","f":"わりつめた","m":"potong itu","p":"30","n":5},{"id":"b2-311","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"互いに","f":"たがいに","m":"satu sama lain","p":"30","n":6},{"id":"b2-312","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"冷やす","f":"ひやす","m":"dingin","p":"30","n":7},{"id":"b2-313","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"節電","f":"せつでん","m":"penghematan energi","p":"30","n":8},{"id":"b2-314","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"低温","f":"ていおん","m":"suhu rendah","p":"30","n":9},{"id":"b2-315","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"保つ","f":"たもつ","m":"menyimpan","p":"30","n":10},{"id":"b2-316","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"定期的","f":"ていきてき","m":"Secara teratur","p":"30","n":11},{"id":"b2-317","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"測定","f":"そくてい","m":"pengukuran","p":"30","n":12},{"id":"b2-318","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"結果","f":"けっか","m":"hasil","p":"30","n":13},{"id":"b2-319","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"食品衛生法","f":"しょくひんえいせいほう","m":"UU Sanitasi Pangan","p":"30","n":14},{"id":"b2-320","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"賞味期限","f":"しようきげん","m":"tanggal habis tempo","p":"30","n":15},{"id":"b2-321","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"賞味期限","f":"しょうみきげん","m":"tanggal habis tempo","p":"30","n":16},{"id":"b2-322","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"消費期限","f":"しょうひきげん","m":"tanggal habis tempo","p":"30","n":17},{"id":"b2-323","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"加工食品","f":"かこうしょくひん","m":"makanan olahan","p":"30","n":18},{"id":"b2-324","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"企業","f":"きぎょう","m":"perusahaan","p":"30","n":19},{"id":"b2-325","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"未開封","f":"みかいふう","m":"Belum dibuka","p":"30","n":20},{"id":"b2-326","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"納品","f":"のうひん","m":"pengiriman bahan","p":"31","n":1},{"id":"b2-327","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"下処理","f":"したしょり","m":"persiapan","p":"31","n":2},{"id":"b2-328","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"工夫","f":"くふ","m":"kecerdikan","p":"31","n":3},{"id":"b2-329","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"解凍","f":"かいとう","m":"Pencairan","p":"31","n":4},{"id":"b2-330","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"加温","f":"かおん","m":"Pemanasan","p":"31","n":5},{"id":"b2-331","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"自然","f":"しぜん","m":"alami","p":"31","n":6},{"id":"b2-332","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"水道","f":"すいどう","m":"persediaan air / air PAM","p":"31","n":7},{"id":"b2-333","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"汁","f":"しる","m":"cairan","p":"32","n":1},{"id":"b2-334","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ドリップ","f":"","m":"menetes","p":"32","n":2},{"id":"b2-335","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"トレー","f":"","m":"baki / nampan","p":"32","n":3},{"id":"b2-336","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"網目トレー","f":"あまみトレー","m":"nampan jaring","p":"32","n":4},{"id":"b2-337","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"排水","f":"はいすい","m":"drainase / saluran pembuangan","p":"32","n":5},{"id":"b2-338","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"密閉","f":"みっぺい","m":"tertutup","p":"32","n":6},{"id":"b2-339","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"移し替えて","f":"うつしかえて","m":"pindahkan itu","p":"32","n":7},{"id":"b2-340","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"固形","f":"こけい","m":"padat","p":"32","n":8},{"id":"b2-341","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ペースト","f":"","m":"tempel","p":"32","n":9},{"id":"b2-342","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"劣化","f":"れっか","m":"kemerosotan / menurun","p":"32","n":10},{"id":"b2-343","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"適正濃度","f":"てきせいのうど","m":"konsentrasi yang sesuai","p":"32","n":11},{"id":"b2-344","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"食塩水","f":"しょくえんすい","m":"larutan garam","p":"32","n":12},{"id":"b2-345","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"工程","f":"こうてい","m":"proses","p":"32","n":13},{"id":"b2-346","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"選別","f":"せんべつ","m":"penyortiran","p":"32","n":14},{"id":"b2-347","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"分別","f":"ぶんべつ","m":"penyortiran","p":"32","n":15},{"id":"b2-348","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"裁断","f":"さいだん","m":"pemotongan","p":"32","n":16},{"id":"b2-349","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"魚のウロコ","f":"さかなのウロコ","m":"sisik ikan","p":"32","n":17},{"id":"b2-350","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"確実","f":"かくじつ","m":"kepastian","p":"32","n":18},{"id":"b2-351","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"廃棄する","f":"はいきする","m":"membuang","p":"32","n":19},{"id":"b2-352","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"骨","f":"ほね","m":"tulang","p":"32","n":20},{"id":"b2-353","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"製造","f":"せいぞう","m":"produksi","p":"32","n":21},{"id":"b2-354","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"細断","f":"さいだん","m":"pencacahan","p":"32","n":22},{"id":"b2-355","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"混合","f":"こんごう","m":"pencampuran","p":"32","n":23},{"id":"b2-356","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"成型","f":"せいけい","m":"pencetakan","p":"32","n":24},{"id":"b2-357","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"配管","f":"はいかん","m":"perpipaan","p":"32","n":25},{"id":"b2-358","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"物質","f":"ぶっしつ","m":"bahan","p":"33","n":1},{"id":"b2-359","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"加熱殺菌","f":"かねつさっきん","m":"sterilisasi panas","p":"33","n":2},{"id":"b2-360","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"消化","f":"しょうか","m":"pencernaan","p":"33","n":3},{"id":"b2-361","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"設定","f":"せってい","m":"pengaturan","p":"33","n":4},{"id":"b2-362","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"中心温度","f":"ちゅうしんおんど","m":"temperatur inti","p":"33","n":5},{"id":"b2-363","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"細菌","f":"さいきん","m":"bakteri","p":"33","n":6},{"id":"b2-364","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"かたまり","f":"","m":"gumpalan","p":"33","n":7},{"id":"b2-365","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"確かめます","f":"たしかめます","m":"akan saya periksa","p":"33","n":8},{"id":"b2-366","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"冷却","f":"れいきゃく","m":"pendinginan","p":"33","n":9},{"id":"b2-367","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"冷える","f":"ひえる","m":"dingin","p":"34","n":1},{"id":"b2-368","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"増える","f":"ふえる","m":"meningkatkan","p":"34","n":2},{"id":"b2-369","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"具大的","f":"ぐだいてき","m":"secara khusus","p":"34","n":3},{"id":"b2-370","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"損なわない","f":"そこなわない","m":"tidak merusak","p":"34","n":4},{"id":"b2-371","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"次亜塩素酸ナトリウム","f":"じあえんそさん","m":"natrium hipoklorit","p":"34","n":5},{"id":"b2-372","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"冷凍","f":"れいとう","m":"beku","p":"34","n":6},{"id":"b2-373","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"保存性","f":"ほぞんせい","m":"umur penyimpanan","p":"34","n":7},{"id":"b2-374","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"生鮮","f":"せいせん","m":"segar","p":"34","n":8},{"id":"b2-375","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"凍結","f":"とうけつ","m":"beku","p":"34","n":9},{"id":"b2-376","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"硬さ","f":"かたさ","m":"kekerasan","p":"34","n":10},{"id":"b2-377","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"弾力","f":"だんりょく","m":"elastisitas","p":"34","n":11},{"id":"b2-378","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"食感","f":"しょっかん","m":"tekstur","p":"34","n":12},{"id":"b2-379","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"風味","f":"ふうみ","m":"rasa","p":"34","n":13},{"id":"b2-380","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"短時間","f":"たんじかん","m":"waktu singkat","p":"34","n":14},{"id":"b2-381","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"急速","f":"きゅうそく","m":"cepat","p":"34","n":15},{"id":"b2-382","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"充填","f":"じゅうてん","m":"isian","p":"35","n":1},{"id":"b2-383","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"包装","f":"ほうそう","m":"kemasan","p":"35","n":2},{"id":"b2-384","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"検査","f":"けんさ","m":"inspeksi / pengecekan","p":"35","n":3},{"id":"b2-385","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"選別","f":"せんべつ","m":"penyortiran","p":"35","n":4},{"id":"b2-386","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"殺菌","f":"さっきん","m":"sterilisasi","p":"35","n":5},{"id":"b2-387","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"危害要因","f":"きがいよういん","m":"faktor bahaya","p":"35","n":6},{"id":"b2-388","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ボルト","f":"","m":"baut","p":"35","n":7},{"id":"b2-389","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"キャップ","f":"","m":"tutup","p":"35","n":8},{"id":"b2-390","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"内側","f":"うちがわ","m":"di dalam","p":"35","n":9},{"id":"b2-391","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"出荷","f":"しゅっか","m":"pengiriman","p":"35","n":10},{"id":"b2-392","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"印字します","f":"いんじします","m":"mencetak","p":"35","n":11},{"id":"b2-393","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"数字","f":"すうじ","m":"angka","p":"35","n":12},{"id":"b2-394","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ミス","f":"","m":"kesalahan","p":"35","n":13},{"id":"b2-395","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"発生","f":"はっせい","m":"kejadian","p":"35","n":14},{"id":"b2-396","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"穴","f":"あな","m":"lubang","p":"35","n":15},{"id":"b2-397","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"空気","f":"くうき","m":"udara","p":"35","n":16},{"id":"b2-398","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"もれたり","f":"","m":"Bocor","p":"35","n":17},{"id":"b2-399","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"中身","f":"なかみ","m":"isi","p":"35","n":18},{"id":"b2-400","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"金属探知機","f":"きんぞくたんちき","m":"detektor logam","p":"35","n":19},{"id":"b2-401","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"硬質異物","f":"こうしついぶつ","m":"benda asing yang keras","p":"35","n":20},{"id":"b2-402","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"管理","f":"かんり","m":"pengelolaan","p":"35","n":21},{"id":"b2-403","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"テストピース","f":"","m":"Benda uji","p":"35","n":22},{"id":"b2-404","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"正常","f":"せいじょう","m":"normal","p":"35","n":23},{"id":"b2-405","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"機能","f":"きのう","m":"fungsi","p":"36","n":1},{"id":"b2-406","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"時点","f":"じてん","m":"titik waktu","p":"36","n":2},{"id":"b2-407","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"Ｘ線異物検出器","f":"X せんいぶつけんしゅつき","m":"detektor benda asing sinar-X","p":"36","n":3},{"id":"b2-408","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"数量","f":"すうりょう","m":"kuantitas","p":"36","n":4},{"id":"b2-409","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"不足","f":"ふそく","m":"kekurangan","p":"36","n":5},{"id":"b2-410","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"形状不良品","f":"けいじょうふりょうひん","m":"Bentuk produk cacat","p":"36","n":6},{"id":"b2-411","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"プラスチック","f":"","m":"plastik","p":"36","n":7},{"id":"b2-412","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"頼る","f":"たよる","m":"mengandalkan","p":"36","n":8},{"id":"b2-413","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"微生物検査","f":"びせいぶつけんさ","m":"pengujian mikroba","p":"36","n":9},{"id":"b2-414","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"法律","f":"ほうりつ","m":"hukum","p":"36","n":10},{"id":"b2-415","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"義務","f":"ぎむ","m":"wajib","p":"36","n":11},{"id":"b2-416","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"項目","f":"こうもく","m":"barang","p":"36","n":12},{"id":"b2-417","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"自主的","f":"じしゅてき","m":"Sukarela","p":"36","n":13},{"id":"b2-418","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"配送","f":"はいそう","m":"pengiriman","p":"36","n":14},{"id":"b2-419","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"サンプル","f":"","m":"Sampel","p":"36","n":15},{"id":"b2-420","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"クレーム","f":"","m":"mengeklaim","p":"36","n":16},{"id":"b2-421","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"時期","f":"じき","m":"musim","p":"36","n":17},{"id":"b2-422","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"一定の割合","f":"いっていのわりあい","m":"persentase tertentu","p":"37","n":1},{"id":"b2-423","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"抜き出す","f":"ぬきだす","m":"mengeluarkan","p":"37","n":2},{"id":"b2-424","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"保管参照","f":"ほかんさんしょう","m":"referensi penyimpanan","p":"37","n":3},{"id":"b2-425","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"輸送中","f":"ゆそうちゅう","m":"sedang transit","p":"37","n":4},{"id":"b2-426","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"品質","f":"ひんしつ","m":"kualitas","p":"37","n":5},{"id":"b2-427","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"劣化","f":"れっか","m":"kemerosotan","p":"37","n":6},{"id":"b2-428","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"特別","f":"とくべつ","m":"spesial","p":"37","n":7},{"id":"b2-429","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"仕組み","f":"しくみ","m":"struktur","p":"37","n":8},{"id":"b2-430","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"調べる","f":"しらべる","m":"menyelidiki","p":"37","n":9},{"id":"b2-431","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"含む","f":"ふくむ","m":"termasuk","p":"37","n":10},{"id":"b2-432","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"分析","f":"ぶんせき","m":"analisis","p":"37","n":11},{"id":"b2-433","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"管理基準","f":"かんりきじゅん","m":"standar manajemen","p":"37","n":12},{"id":"b2-434","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"実行","f":"じっこう","m":"eksekusi","p":"37","n":13},{"id":"b2-435","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"監視","f":"かんし","m":"pengawasan","p":"37","n":14},{"id":"b2-436","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"原則","f":"げんそく","m":"prinsip","p":"37","n":15},{"id":"b2-437","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"従って","f":"したがって","m":"sesuai","p":"37","n":16},{"id":"b2-438","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"運用される","f":"うんようされる","m":"dioperasikan","p":"37","n":17},{"id":"b2-439","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"判断","f":"はんだん","m":"pertimbangan","p":"38","n":1},{"id":"b2-440","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"改善措置","f":"かいぜんそち","m":"langkah-langkah perbaikan","p":"38","n":2},{"id":"b2-441","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"逸脱","f":"いつだつ","m":"menyimpang","p":"38","n":3},{"id":"b2-442","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"検証方法","f":"けんしょうほうほう","m":"metode verifikasi","p":"38","n":4},{"id":"b2-443","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"除去","f":"じょきょ","m":"menghilangkan","p":"38","n":5},{"id":"b2-444","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"低減","f":"ていげん","m":"mengurangi","p":"38","n":6},{"id":"b2-445","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"有効","f":"ゆうこう","m":"efektif","p":"38","n":7},{"id":"b2-446","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"計画","f":"けいかく","m":"rencana","p":"38","n":8},{"id":"b2-447","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"記録","f":"きろく","m":"catatan","p":"38","n":9},{"id":"b2-448","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"内容","f":"ないよう","m":"isi","p":"38","n":10},{"id":"b2-449","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"文章","f":"ぶんしょ","m":"kalimat","p":"38","n":11},{"id":"b2-450","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"実際","f":"じっさい","m":"sebenarnya","p":"38","n":12},{"id":"b2-451","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"惣菜","f":"そうざい","m":"lauk pauk","p":"39","n":1},{"id":"b2-452","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"加熱調理する","f":"かねつちょうりする","m":"memasak","p":"39","n":2},{"id":"b2-453","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"管理基準","f":"かんりきじゅん","m":"standar manajemen","p":"39","n":3},{"id":"b2-454","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"重要管理点","f":"じゅうようかんりてん","m":"titik kontrol penting","p":"39","n":4},{"id":"b2-455","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"代表的","f":"だいひょうてき","m":"umum","p":"39","n":5},{"id":"b2-456","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"具体的","f":"ぐたいてき","m":"secara khusus","p":"39","n":6},{"id":"b2-457","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"参照","f":"さんしょう","m":"referensi","p":"39","n":7},{"id":"b2-458","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"加熱ゾーン","f":"かねつゾーン","m":"zona pemanasan","p":"40-41","n":1},{"id":"b2-459","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"通る","f":"とおる","m":"melewati","p":"40-41","n":2},{"id":"b2-460","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"速度","f":"そくど","m":"kecepatan","p":"40-41","n":3},{"id":"b2-461","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"調整","f":"ちょうせい","m":"pengaturan","p":"40-41","n":4},{"id":"b2-462","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"不足","f":"ぶそく","m":"kekurangan","p":"40-41","n":5},{"id":"b2-463","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"廃棄する","f":"はいきする","m":"membuang","p":"40-41","n":6},{"id":"b2-464","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"実施した","f":"じっしした","m":"dilakukan","p":"40-41","n":7},{"id":"b2-465","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"管理手段","f":"かんりしゅだん","m":"langkah-langkah pengelolaan","p":"40-41","n":8},{"id":"b2-466","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"手順","f":"てじゅん","m":"prosedur","p":"40-41","n":9},{"id":"b2-467","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"あらかじめ","f":"","m":"di muka","p":"40-41","n":10},{"id":"b2-468","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"ハンバーグ","f":"","m":"roti isi daging","p":"40-41","n":11},{"id":"b2-469","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"殺菌液の濃度","f":"さっきんえきののうど","m":"konsentrasi larutan sterilisasi","p":"40-41","n":12},{"id":"b2-470","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"計る","f":"はかる","m":"ukuran","p":"40-41","n":13},{"id":"b2-471","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"事実","f":"じじつ","m":"fakta","p":"40-41","n":14},{"id":"b2-472","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"絶対","f":"ぜったい","m":"mutlak","p":"40-41","n":15},{"id":"b2-473","bab":2,"section":"Bab 2: Keamanan Pangan (Higiene)","k":"修正する","f":"しゅうせいする","m":"memperbaiki","p":"40-41","n":16},{"id":"b3-1","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"労働災害","f":"ろうどうさいがい","m":"kecelakaan industri","p":"43","n":1},{"id":"b3-2","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"経験","f":"けいけん","m":"pengalaman","p":"43","n":2},{"id":"b3-3","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"関係","f":"かんけい","m":"hubungan","p":"43","n":3},{"id":"b3-4","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"全て","f":"すべて","m":"semua","p":"43","n":4},{"id":"b3-5","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"未熟練作業者","f":"みじゅくれんさぎょうしゃ","m":"pekerja tidak terampil","p":"43","n":5},{"id":"b3-6","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"未満","f":"みまん","m":"kurang dari","p":"43","n":6},{"id":"b3-7","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"占める","f":"しめる","m":"menempati","p":"43","n":7},{"id":"b3-8","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"割合","f":"わりあい","m":"perbandingan","p":"43","n":8},{"id":"b3-9","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"慣れてない","f":"なれてない","m":"belum terbiasa","p":"43","n":9},{"id":"b3-10","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"気が付いてない","f":"きがついてない","m":"tidak menyadarinya","p":"43","n":10},{"id":"b3-11","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"多いじゅん","f":"おおいじゅん","m":"kebanyakan","p":"43","n":11},{"id":"b3-12","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"転倒","f":"てんとう","m":"jatuh","p":"43","n":12},{"id":"b3-13","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"はさまれ","f":"","m":"terjepit","p":"43","n":13},{"id":"b3-14","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"巻き込まれ","f":"まきこまれ","m":"kelilit / terjepit","p":"43","n":14},{"id":"b3-15","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"切れる","f":"きれる","m":"terpotong","p":"43","n":15},{"id":"b3-16","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"擦れ","f":"こすれ","m":"menggosok","p":"43","n":16},{"id":"b3-17","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"主な","f":"おもな","m":"utama","p":"44","n":1},{"id":"b3-18","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"つまずいたり","f":"","m":"tersandung atau tersandung","p":"44","n":2},{"id":"b3-19","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"滑る","f":"すべる","m":"licin","p":"44","n":3},{"id":"b3-20","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"打ったり","f":"うったり","m":"memukul","p":"44","n":4},{"id":"b3-21","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"折り","f":"おり","m":"patah","p":"44","n":5},{"id":"b3-22","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"骨","f":"ほね","m":"tulang","p":"44","n":6},{"id":"b3-23","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"コンベアのギア","f":"","m":"roda gigi konveyor","p":"44","n":7},{"id":"b3-24","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"つぶれたり","f":"","m":"hancur","p":"44","n":8},{"id":"b3-25","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"はさまる","f":"","m":"terjepit","p":"44","n":9},{"id":"b3-26","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"包丁","f":"ほうちょう","m":"pisau","p":"44","n":10},{"id":"b3-27","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"詰まって手","f":"つまってて","m":"tanganku tersangkut","p":"44","n":11},{"id":"b3-28","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"階段","f":"かいだん","m":"tangga","p":"44","n":12},{"id":"b3-29","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"はしご","f":"","m":"tangga","p":"44","n":13},{"id":"b3-30","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"脚立","f":"きゃたつ","m":"tangga segitiga","p":"44","n":14},{"id":"b3-31","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"捻挫する","f":"ねんざする","m":"keseleo","p":"44","n":15},{"id":"b3-32","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"オーブン","f":"","m":"oven","p":"44","n":16},{"id":"b3-33","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"全身","f":"ぜんしん","m":"seluruh tubuh","p":"44","n":17},{"id":"b3-34","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"腰痛","f":"ようつう","m":"nyeri punggung bawah","p":"45","n":1},{"id":"b3-35","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"繰り返す","f":"くりかえす","m":"mengulang","p":"45","n":2},{"id":"b3-36","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"熱中症","f":"ねっちゅうしょう","m":"struk akibat panas","p":"45","n":3},{"id":"b3-37","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"湿度","f":"しつど","m":"kelembaban","p":"45","n":4},{"id":"b3-38","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"体内","f":"たいない","m":"di dalam tubuh","p":"45","n":5},{"id":"b3-39","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"水分","f":"すいぶん","m":"kelembaban","p":"45","n":6},{"id":"b3-40","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"塩分","f":"えんぶん","m":"garam","p":"45","n":7},{"id":"b3-41","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"崩れる","f":"くずれる","m":"runtuh","p":"45","n":8},{"id":"b3-42","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"体温調節","f":"たいおんちょうせつ","m":"pengaturan suhu tubuh","p":"45","n":9},{"id":"b3-43","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"激突","f":"げきとつ","m":"bentrokan/tabrakan","p":"45","n":10},{"id":"b3-44","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"目標","f":"もくひょう","m":"hasil","p":"45","n":11},{"id":"b3-45","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"活動","f":"かつどう","m":"aktivitas","p":"45","n":12},{"id":"b3-46","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"不要なもの","f":"ふようなもの","m":"tidak perlu","p":"46","n":1},{"id":"b3-47","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"状態","f":"じょうたい","m":"situasi","p":"46","n":2},{"id":"b3-48","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"保ちます","f":"たもちます","m":"menjaga","p":"46","n":3},{"id":"b3-49","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"動線","f":"どうせん","m":"garis arus","p":"46","n":4},{"id":"b3-50","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"枠の中","f":"わくのなか","m":"di dalam bingkai","p":"46","n":5},{"id":"b3-51","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"床のテープ","f":"ゆかのテープ","m":"pita lantai","p":"46","n":6},{"id":"b3-52","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"沿って","f":"そって","m":"bersama","p":"46","n":7},{"id":"b3-53","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"減ります","f":"へります","m":"berkurang","p":"46","n":8},{"id":"b3-54","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"つながります","f":"","m":"terhubung","p":"46","n":9},{"id":"b3-55","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"感染症","f":"かんせんしょう","m":"Infeksi","p":"46","n":10},{"id":"b3-56","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"役立ちます","f":"やくだちます","m":"bermanfaat / membantu","p":"46","n":11},{"id":"b3-57","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"長袖","f":"ながそで","m":"lengan panjang","p":"46","n":12},{"id":"b3-58","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"袖口","f":"そでぐち","m":"manset (bagian ujung lengan baju)","p":"46","n":13},{"id":"b3-59","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"袖","f":"そで","m":"lengan baju","p":"46","n":14},{"id":"b3-60","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"まくり上げない","f":"まくりあげない","m":"Jangan menggulungnya","p":"46","n":15},{"id":"b3-61","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"安全保護具","f":"あんぜんほごぐ","m":"peralatan perlindungan keselamatan","p":"47","n":1},{"id":"b3-62","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"高所場所","f":"こうしょばしょ","m":"tempat yang tinggi","p":"47","n":2},{"id":"b3-63","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"薬品","f":"やくひん","m":"obat","p":"47","n":3},{"id":"b3-64","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"微粉","f":"びふん","m":"bubuk halus","p":"47","n":4},{"id":"b3-65","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"高圧洗浄","f":"こうあつせんじょう","m":"pencucian bertekanan tinggi","p":"47","n":5},{"id":"b3-66","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"液体","f":"えきたい","m":"cairan","p":"47","n":6},{"id":"b3-67","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"騒音","f":"そうおん","m":"kebisingan","p":"47","n":7},{"id":"b3-68","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"難聴","f":"なんちょう","m":"gangguan pendengaran","p":"47","n":8},{"id":"b3-69","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"耐熱のぬね","f":"たいねつのぬね","m":"Dogwood tahan panas","p":"47","n":9},{"id":"b3-70","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"繊維","f":"せんい","m":"serat","p":"47","n":10},{"id":"b3-71","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"編み","f":"あみ","m":"rajutan","p":"47","n":11},{"id":"b3-72","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"耐切創","f":"たいせっそう","m":"Resistensi terhadap potongan","p":"47","n":12},{"id":"b3-73","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"つま先","f":"つまさき","m":"jari kaki","p":"47","n":13},{"id":"b3-74","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"かかとに","f":"","m":"dengan tumit","p":"47","n":14},{"id":"b3-75","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"鋼板","f":"こうばん","m":"pelat baja","p":"47","n":15},{"id":"b3-76","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"装着","f":"そうちゃく","m":"lampiran","p":"47","n":16},{"id":"b3-77","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ステンレス鋼","f":"ステンレスこう","m":"besi tahan karat","p":"47","n":17},{"id":"b3-78","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"耐油","f":"たいゆ","m":"tahan minyak","p":"47","n":18},{"id":"b3-79","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"靴底","f":"くつぞこ","m":"sol sepatu","p":"47","n":19},{"id":"b3-80","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"上部","f":"じょうぶ","m":"bagian atas","p":"47","n":20},{"id":"b3-81","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"作業手順","f":"さぎょうてじゅん","m":"prosedur kerja","p":"48","n":1},{"id":"b3-82","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"基本的な","f":"きほんてきな","m":"pada dasarnya","p":"48","n":2},{"id":"b3-83","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"通路","f":"つうろ","m":"lorong","p":"48","n":3},{"id":"b3-84","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"横断方法","f":"おうだんほうほう","m":"metode penyeberangan","p":"48","n":4},{"id":"b3-85","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"目を合わせて","f":"めをあわせて","m":"mengkombinasikan penglihatan","p":"48","n":5},{"id":"b3-86","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"くぐらない","f":"","m":"Jangan lewati","p":"48","n":6},{"id":"b3-87","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"指差呼称","f":"しさこしょう","m":"menunjuk dan memanggil","p":"48","n":7},{"id":"b3-88","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"共同","f":"きょうどう","m":"Persendian","p":"48","n":8},{"id":"b3-89","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"よそ見","f":"よそみ","m":"mengalihkan pandangan","p":"48","n":9},{"id":"b3-90","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"無駄話","f":"ムダはなし","m":"pembicaraan kosong","p":"48","n":10},{"id":"b3-91","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"信号","f":"しんごう","m":"sinyal","p":"49","n":1},{"id":"b3-92","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"標識","f":"ひょうしき","m":"tanda","p":"49","n":2},{"id":"b3-93","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"器具","f":"きぐ","m":"peralatan","p":"49","n":3},{"id":"b3-94","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"目的","f":"もくてき","m":"tujuan","p":"49","n":4},{"id":"b3-95","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"行います","f":"おこないます","m":"menerapkan","p":"49","n":5},{"id":"b3-96","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"理解","f":"りかい","m":"memahami","p":"49","n":6},{"id":"b3-97","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"示したもの","f":"しめしたもの","m":"apa yang ditampilkan","p":"49","n":7},{"id":"b3-98","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"補足資料","f":"ほそくしりょう","m":"materi tambahan","p":"49","n":8},{"id":"b3-99","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"参照","f":"さんしょう","m":"referensi","p":"49","n":9},{"id":"b3-100","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"丁寧","f":"ていねい","m":"sopan","p":"49","n":10},{"id":"b3-101","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"落ち着いて","f":"おちついて","m":"tenang","p":"49","n":11},{"id":"b3-102","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"無料","f":"むり","m":"tidak memunkinkan","p":"49","n":12},{"id":"b3-103","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"始業前点検","f":"しぎょうまえてんけん","m":"memeriksa sebelum mulai bekerja","p":"49","n":13},{"id":"b3-104","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"異常","f":"いじょう","m":"kelainan","p":"49","n":14},{"id":"b3-105","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"はさまる","f":"","m":"tercepit","p":"49","n":15},{"id":"b3-106","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"振動","f":"しんどう","m":"getaran","p":"50","n":1},{"id":"b3-107","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"部品","f":"ぶひん","m":"bagian","p":"50","n":2},{"id":"b3-108","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ネジ","f":"","m":"baut","p":"50","n":3},{"id":"b3-109","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"動作","f":"どうさ","m":"gerakan","p":"50","n":4},{"id":"b3-110","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"正常","f":"せいじょう","m":"normal","p":"50","n":5},{"id":"b3-111","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"点灯","f":"てんとう","m":"menyala","p":"50","n":6},{"id":"b3-112","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"消灯","f":"しょうとう","m":"lampu padam","p":"50","n":7},{"id":"b3-113","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"停止","f":"ていし","m":"Berhenti","p":"50","n":8},{"id":"b3-114","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"刃先","f":"はさき","m":"ujung bilah (benda tajam)","p":"50","n":9},{"id":"b3-115","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"スクリュー","f":"","m":"baut","p":"50","n":10},{"id":"b3-116","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"回転","f":"かいてん","m":"memutar","p":"50","n":11},{"id":"b3-117","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"詰まったもの","f":"つまったもの","m":"barang tersumbat","p":"50","n":12},{"id":"b3-118","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"取り除く","f":"とりのぞく","m":"mengambil","p":"50","n":13},{"id":"b3-119","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"操作盤","f":"そうさばん","m":"papan operasi","p":"50","n":14},{"id":"b3-120","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"安全装置","f":"あんぜんそうち","m":"perangkat keamanan","p":"51","n":1},{"id":"b3-121","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"扉","f":"とびら","m":"pintu","p":"51","n":2},{"id":"b3-122","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"自動的","f":"じどうてき","m":"secara otomatis","p":"51","n":3},{"id":"b3-123","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"仕組み","f":"しくみ","m":"struktur","p":"51","n":4},{"id":"b3-124","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"フェールセーフ","f":"","m":"gagal keamanan","p":"51","n":5},{"id":"b3-125","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"電源","f":"でんげん","m":"sumber daya listrik","p":"51","n":6},{"id":"b3-126","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"チェーン","f":"","m":"rantai","p":"51","n":7},{"id":"b3-127","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"故障対応中","f":"こしょうたいおうちゅう","m":"Pemecahan masalah sedang berlangsung","p":"51","n":8},{"id":"b3-128","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ぶら下げて","f":"ぶらさげて","m":"gantung itu","p":"51","n":9},{"id":"b3-129","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"うっかり","f":"","m":"secara tidak sengaja","p":"51","n":10},{"id":"b3-130","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"フールプルーフ","f":"","m":"bukti bodoh","p":"51","n":11},{"id":"b3-131","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"メンテナンス","f":"","m":"pemeliharaan","p":"51","n":12},{"id":"b3-132","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"安定","f":"あんてい","m":"stabil","p":"51","n":13},{"id":"b3-133","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"整備","f":"せいび","m":"Pemeliharaan","p":"51","n":14},{"id":"b3-134","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"生産","f":"せいさん","m":"produksi","p":"51","n":15},{"id":"b3-135","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"洗剤","f":"せんざい","m":"deterjen","p":"52","n":1},{"id":"b3-136","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"薬剤","f":"やくざい","m":"obat","p":"52","n":2},{"id":"b3-137","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"塩素系","f":"えんそけい","m":"diklorinasi","p":"52","n":3},{"id":"b3-138","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"酸性洗剤","f":"さんせいせんざい","m":"deterjen asam","p":"52","n":4},{"id":"b3-139","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"混ぜる","f":"まぜる","m":"mencampur","p":"52","n":5},{"id":"b3-140","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"同時に","f":"どうじに","m":"pada saat yang sama","p":"52","n":6},{"id":"b3-141","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"有毒","f":"ゆうどく","m":"beracun","p":"52","n":7},{"id":"b3-142","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"異常事態","f":"いじょうじたい","m":"Situasi tidak normal","p":"52","n":8},{"id":"b3-143","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"対応","f":"たいおう","m":"korespondensi","p":"52","n":9},{"id":"b3-144","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"応じて","f":"おうじて","m":"bergantung kepada","p":"52","n":10},{"id":"b3-145","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"緊急","f":"きんきゅう","m":"keadaan darurat","p":"52","n":11},{"id":"b3-146","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"勝手に","f":"かってに","m":"sewenang-wenang","p":"52","n":12},{"id":"b3-147","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"行動","f":"こうどう","m":"tindakan","p":"52","n":13},{"id":"b3-148","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"倒れる","f":"たおれる","m":"jatuh","p":"52","n":14},{"id":"b3-149","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"あわてて","f":"","m":"terburu-buru","p":"53","n":1},{"id":"b3-150","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"助ける","f":"たすける","m":"membantu","p":"53","n":2},{"id":"b3-151","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"二次災害","f":"にじさいがい","m":"Bencana sekunder","p":"53","n":3},{"id":"b3-152","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"日頃","f":"ひごろ","m":"setiap hari","p":"53","n":4},{"id":"b3-153","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"訓練","f":"くんれん","m":"pelatihan","p":"53","n":5},{"id":"b3-154","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"火災","f":"かさい","m":"api","p":"53","n":6},{"id":"b3-155","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"避難訓練","f":"ひなんくんれん","m":"Latihan evakuasi","p":"53","n":7},{"id":"b3-156","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"レバー","f":"","m":"tuas","p":"53","n":8},{"id":"b3-157","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ぐらぐらする","f":"","m":"goyangan","p":"53","n":9},{"id":"b3-158","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"点滅","f":"てんめつ","m":"berkedip","p":"53","n":10},{"id":"b3-159","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"身につけて","f":"みにつけて","m":"pakai itu","p":"53","n":11},{"id":"b3-160","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"事例","f":"じれい","m":"studi kasus","p":"54","n":1},{"id":"b3-161","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"学ぶ","f":"まなぶ","m":"mempelajari","p":"54","n":2},{"id":"b3-162","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"社内","f":"しゃない","m":"Di dalam perusahaan","p":"54","n":3},{"id":"b3-163","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"身近","f":"みじか","m":"akrab / familiar","p":"54","n":4},{"id":"b3-164","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"社外","f":"しゃがい","m":"Di luar perusahaan","p":"54","n":5},{"id":"b3-165","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"覚える","f":"おぼえる","m":"mengingat","p":"54","n":6},{"id":"b3-166","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ヒヤリハット","f":"","m":"hampir kecelakaan","p":"54","n":7},{"id":"b3-167","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"軽い","f":"かるい","m":"ringan","p":"54","n":8},{"id":"b3-168","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"件","f":"けん","m":"kasus","p":"54","n":9},{"id":"b3-169","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"法則","f":"ほうそく","m":"hukum","p":"54","n":10},{"id":"b3-170","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ハインリッヒ","f":"","m":"heinrich","p":"54","n":11},{"id":"b3-171","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"体験","f":"たいけん","m":"pengalaman","p":"55","n":1},{"id":"b3-172","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"全員","f":"ぜんいん","m":"semua orang","p":"55","n":2},{"id":"b3-173","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"共有","f":"きょうゆう","m":"membagikan","p":"55","n":3},{"id":"b3-174","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"改善","f":"かいぜん","m":"peningkatan","p":"55","n":4},{"id":"b3-175","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"進む","f":"すすむ","m":"maju","p":"55","n":5},{"id":"b3-176","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"実際","f":"じっさい","m":"sebenarnya","p":"55","n":6},{"id":"b3-177","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"潜在的","f":"せんざいてき","m":"potensi","p":"55","n":7},{"id":"b3-178","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"力","f":"ちから","m":"kekuatan","p":"55","n":8},{"id":"b3-179","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"文字","f":"もじ","m":"huruf","p":"55","n":9},{"id":"b3-180","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"感電する","f":"かんでんする","m":"sengatan listrik","p":"55","n":10},{"id":"b3-181","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"酸欠になる","f":"さんけつになる","m":"kekurangan oksigen","p":"55","n":11},{"id":"b3-182","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"有害物にやられる","f":"ゆうがいぶつにやられる","m":"terserang zat-zat berbahaya","p":"55","n":12},{"id":"b3-183","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"くずれる","f":"","m":"hancur","p":"55","n":13},{"id":"b3-184","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"爆発","f":"ばくはつ","m":"ledakan","p":"55","n":14},{"id":"b3-185","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"漏れる","f":"もれる","m":"bocor","p":"55","n":15},{"id":"b3-186","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"姿勢","f":"しせい","m":"sikap","p":"56","n":1},{"id":"b3-187","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"イラスト","f":"","m":"ilustrasi","p":"56","n":2},{"id":"b3-188","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"示した","f":"しめした","m":"diindikasikan","p":"56","n":3},{"id":"b3-189","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"警戒","f":"けいかい","m":"kewaspadaan","p":"56","n":4},{"id":"b3-190","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"積まれた","f":"つまれた","m":"menumpuk","p":"56","n":5},{"id":"b3-191","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"煮物","f":"にもの","m":"makanan rebus","p":"56","n":6},{"id":"b3-192","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ガスコンロ","f":"","m":"Tungku gas","p":"56","n":7},{"id":"b3-193","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"室内","f":"しつない","m":"dalam","p":"56","n":8},{"id":"b3-194","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"トレー","f":"","m":"baki","p":"56","n":9},{"id":"b3-195","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"移動","f":"いどう","m":"bergerak","p":"56","n":10},{"id":"b3-196","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"拭き取って","f":"ふきとって","m":"bersihkan","p":"56","n":11},{"id":"b3-197","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"両手","f":"りょうて","m":"kedua tangan","p":"57","n":1},{"id":"b3-198","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"通路","f":"つうろ","m":"lorong / jalan","p":"57","n":2},{"id":"b3-199","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"空箱","f":"からばこ","m":"kotak kosong","p":"57","n":3},{"id":"b3-200","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"つまずき","f":"","m":"tersandung","p":"57","n":4},{"id":"b3-201","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"転倒","f":"てんとう","m":"jatuh","p":"57","n":5},{"id":"b3-202","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"重ねて","f":"かさねて","m":"tumpuk","p":"57","n":6},{"id":"b3-203","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"数","f":"かず","m":"jumlah","p":"57","n":7},{"id":"b3-204","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"突然","f":"とつぜん","m":"tiba-tiba","p":"57","n":8},{"id":"b3-205","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"引っ掛かって","f":"","m":"tersangkut / terjepit","p":"58-59","n":1},{"id":"b3-206","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"除去","f":"じょきょ","m":"pemindahan","p":"58-59","n":2},{"id":"b3-207","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"確実","f":"かくじつ","m":"memastikan","p":"58-59","n":3},{"id":"b3-208","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"原因","f":"げんいん","m":"penyebab","p":"58-59","n":4},{"id":"b3-209","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"対策","f":"たいさく","m":"penanganan","p":"58-59","n":5},{"id":"b3-210","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"滑り","f":"すべり","m":"licin","p":"58-59","n":6},{"id":"b3-211","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"加工する","f":"かこうする","m":"proses","p":"58-59","n":7},{"id":"b3-212","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"落ちる","f":"おちる","m":"jatuh ke bawah","p":"58-59","n":8},{"id":"b3-213","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"棚","f":"たな","m":"rak","p":"58-59","n":9},{"id":"b3-214","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"脚立","f":"きゃたつ","m":"anak tangga","p":"58-59","n":10},{"id":"b3-215","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"止金具","f":"とめかなぐ","m":"pengikat / pengunci","p":"60","n":1},{"id":"b3-216","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"鉄板","f":"てっぱん","m":"plat besi","p":"60","n":2},{"id":"b3-217","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"作業台","f":"さぎょうだい","m":"meja kerja","p":"60","n":3},{"id":"b3-218","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"移そう","f":"うつそう","m":"memindahkan","p":"60","n":4},{"id":"b3-219","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"素手で","f":"すで","m":"dengan tangan kosong (tanpa sarung tangan)","p":"60","n":5},{"id":"b3-220","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"直後","f":"ちょくご","m":"segera setelah","p":"60","n":6},{"id":"b3-221","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"鍋","f":"なべ","m":"panci","p":"60","n":7},{"id":"b3-222","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"釜","f":"かま","m":"ketel","p":"60","n":8},{"id":"b3-223","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"腰痛","f":"ようつう","m":"nyeri punggung bawah","p":"61","n":1},{"id":"b3-224","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"感じる","f":"かんじる","m":"merasakan","p":"61","n":2},{"id":"b3-225","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"不安定","f":"ふあんてい","m":"tidak stabil","p":"61","n":3},{"id":"b3-226","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"膝","f":"ひざ","m":"lutut","p":"61","n":4},{"id":"b3-227","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"曲げて","f":"まげて","m":"membengkokkan","p":"61","n":5},{"id":"b3-228","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"抱えて","f":"かかえて","m":"tahan, peluk","p":"61","n":6},{"id":"b3-229","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"伸ばす","f":"のばす","m":"menggeliat, memanjangkan","p":"61","n":7},{"id":"b3-230","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"生あん工程","f":"せいあんこうてい","m":"proses pasta kacang mentah","p":"61","n":8},{"id":"b3-231","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ホッパー","f":"","m":"gerbong","p":"61","n":9},{"id":"b3-232","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"豆","f":"まめ","m":"kacang polong","p":"61","n":10},{"id":"b3-233","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"計量","f":"けいりょう","m":"pengukuran","p":"61","n":11},{"id":"b3-234","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"繰り返し","f":"くりかえし","m":"pengulangan","p":"61","n":12},{"id":"b3-235","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"ふらつき","f":"","m":"sakit kepala ringan","p":"61","n":13},{"id":"b3-236","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"診断","f":"しんだん","m":"diagnosa","p":"61","n":14},{"id":"b3-237","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"汗","f":"あせ","m":"keringat","p":"61","n":15},{"id":"b3-238","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"安静","f":"あんせい","m":"istirahat","p":"62","n":1},{"id":"b3-239","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"緩める","f":"ゆるめる","m":"melonggarkan","p":"62","n":2},{"id":"b3-240","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"脇の下","f":"わきのした","m":"ketiak","p":"62","n":3},{"id":"b3-241","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"足の付け根","f":"あしのつけね","m":"pangkal kaki","p":"62","n":4},{"id":"b3-242","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"スポーツドリンク","f":"","m":"minuman olahraga","p":"62","n":5},{"id":"b3-243","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"激突","f":"げきとつ","m":"Bentrokan / tabrakan","p":"62","n":6},{"id":"b3-244","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"一時停止","f":"いちじていし","m":"berhenti sebentar","p":"62","n":7},{"id":"b3-245","bab":3,"section":"Bab 3: Keselamatan Kerja","k":"運転者","f":"うんてんしゃ","m":"pengemudi","p":"62","n":8},{"id":"b3r-1","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"立入禁止","f":"たちいりきんし","m":"langan masuk","p":"63","n":1},{"id":"b3r-2","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"開放厳禁","f":"かいほうげんきん","m":"dilarang keras untuk dibuka","p":"63","n":2},{"id":"b3r-3","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"点検中","f":"てんけんちゅう","m":"sedang diperiksa","p":"63","n":3},{"id":"b3r-4","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"スイッチをいれるな","f":"","m":"jangan hidupkan saklarnya","p":"63","n":4},{"id":"b3r-5","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"手を触れるな","f":"てをふれるな","m":"Jangan sentuh","p":"63","n":5},{"id":"b3r-6","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"はさまれ注意","f":"はさまれちゅうい","m":"Hati-hati terjepit","p":"63","n":6},{"id":"b3r-7","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"火傷注意","f":"やけどちゅうい","m":"Hati-hati terhadap luka bakar","p":"63","n":7},{"id":"b3r-8","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"高温注意","f":"こうおんちゅうい","m":"Hati-hati terhadap suhu tinggi","p":"63","n":8},{"id":"b3r-9","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"足元注意","f":"あしもとちゅうい","m":"Perhatikan langkahmu","p":"64","n":1},{"id":"b3r-10","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"危険転倒注意","f":"きけんてんとうちゅうい","m":"Bahaya terjatuh","p":"64","n":2},{"id":"b3r-11","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"開口部注意","f":"かいこうぶちゅうい","m":"Hati-hati dengan bukaan","p":"64","n":3},{"id":"b3r-12","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"転落注意","f":"てんらくちゅうい","m":"Hati-hati agar tidak jatuh","p":"64","n":4},{"id":"b3r-13","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"切断注意","f":"せつだんちゅうい","m":"Hati-hati dalam memotong","p":"64","n":5},{"id":"b3r-14","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"回転物に手をだすな","f":"かいてんものてをだすな","m":"Jangan menyentuh benda berputar","p":"64","n":6},{"id":"b3r-15","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"感電注意","f":"かんでんちゅうい","m":"Hati-hati terhadap sengatan listrik","p":"64","n":7},{"id":"b3r-16","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"頭上注意","f":"ずじょうちゅうい","m":"perhatikan kepalamu","p":"64","n":8},{"id":"b3r-17","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"ゴーグル着用","f":"ゴーグルちゃくよう","m":"Mengenakan kacamata","p":"65","n":1},{"id":"b3r-18","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"保護メガネ着用","f":"ほごめがねちゃくよう","m":"Kenakan kacamata pengaman","p":"65","n":2},{"id":"b3r-19","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"非常口","f":"ひじょうぐち","m":"pintu darurat","p":"65","n":3},{"id":"b3r-20","bab":3,"section":"Bab 3: Rambu Keselamatan Kerja","k":"消火器","f":"しょうかき","m":"alat pemadam api","p":"65","n":4}];
+</script>
+<script>
+(function(){
+  "use strict";
+
+  const GROUPS = [
+    { id:'b1',  name:'Bab 1', desc:'Industri Pengolahan Makanan · hal. 2–3', color:'#2E6E7A' },
+    { id:'b2',  name:'Bab 2', desc:'Keamanan Pangan (Higiene) · hal. 5–41',   color:'#3C7A6E' },
+    { id:'b3',  name:'Bab 3', desc:'Keselamatan Kerja · hal. 43–62',           color:'#B1782E' },
+    { id:'b3r', name:'Bab 3+', desc:'Rambu Keselamatan Kerja · hal. 63–65',    color:'#B14A42' },
+  ];
+
+  const byGroup = {};
+  GROUPS.forEach(g => byGroup[g.id] = VOCAB_DATA.filter(v => v.id.split('-')[0] === g.id));
+
+  // ---------- state ----------
+  let mode = 'jp-id';
+  let shuffleOn = true;
+  let pageSel = new Set();   // halaman modul yang dipilih (label, mis. '7' atau '22-23')
+  let countActive = false;
+  let countN = null;
+  let countShuffleOn = false;
+  let selected = new Set();
+  let deck = [];        // current round queue
+  let nextRoundQueue = [];
+  let total = 0;
+  let doneCount = 0;
+  let roundCount = 1;
+  let history = [];     // for stats: unique ids ever marked "known" first try vs total
+  let currentCard = null;
+  let fcSeen = new Set();      // kartu yang sudah pernah dinilai sekali
+  let fcFirstTry = 0;          // kartu yang langsung 'Ingat' di percobaan pertama
+
+  // ---------- matching game state ----------
+  const MATCH_BATCH_SIZE = 6;
+  let matchDeck = [];       // items not yet shown/matched
+  let matchBatch = [];      // items currently on screen
+  let matchTotal = 0;
+  let matchMatchedCount = 0;
+  let matchMistakes = 0;
+  let matchSelectedLeft = null;
+  let matchSelectedRight = null;
+  let matchLocked = false;
+
+  // ---------- elements ----------
+  const $ = sel => document.querySelector(sel);
+  const views = {
+    select: $('#view-select'),
+    practice: $('#view-practice'),
+    summary: $('#view-summary'),
+    list: $('#view-list'),
+    quiz: $('#view-quiz'),
+    match: $('#view-match'),
+    crossword: $('#view-crossword'),
+  };
+  const babList = $('#babList');
+  const startBtn = $('#startBtn');
+  const quizBtn = $('#quizBtn');
+  const matchBtn = $('#matchBtn');
+  const crosswordBtn = $('#crosswordBtn');
+  const startHint = $('#startHint');
+  const modeSwitch = $('#modeSwitch');
+  const stage = $('#stage');
+  const progNum = $('#progNum');
+  const progTotal = $('#progTotal');
+  const progFill = $('#progFill');
+  const sectionLabel = $('#sectionLabel');
+  const listScroll = $('#listScroll');
+  const listSearch = $('#listSearch');
+  const quizQuestion = $('#quizQuestion');
+  const quizOptions = $('#quizOptions');
+  const quizFeedback = $('#quizFeedback');
+  const quizNextBtn = $('#quizNextBtn');
+  const quizProgNum = $('#quizProgNum');
+  const quizProgTotal = $('#quizProgTotal');
+  const quizProgFill = $('#quizProgFill');
+  const rangePanel = $('#rangePanel');
+  const rangeChips = $('#rangeChips');
+  const rangeFromInput = $('#rangeFromInput');
+  const rangeToInput = $('#rangeToInput');
+  const rangeApplyBtn = $('#rangeApplyBtn');
+  const rangeResetBtn = $('#rangeResetBtn');
+  const rangeStatus = $('#rangeStatus');
+  const rangeStatusText = $('#rangeStatusText');
+  const rangeChunkBtns = [...document.querySelectorAll('.range-chunk-btn')];
+  const countInput = $('#countInput');
+  const countShuffleBtn = $('#countShuffleBtn');
+  const countApplyBtn = $('#countApplyBtn');
+  const countStatus = $('#countStatus');
+  const countStatusText = $('#countStatusText');
+  const countResetBtn = $('#countResetBtn');
+  const matchLeftCol = $('#matchLeftCol');
+  const matchRightCol = $('#matchRightCol');
+  const matchProgNum = $('#matchProgNum');
+  const matchProgTotal = $('#matchProgTotal');
+  const matchProgFill = $('#matchProgFill');
+
+  function hasKanji(str){
+    return /[\u4e00-\u9faf\u3400-\u4dbf]/.test(str || '');
+  }
+
+  function showView(name){
+    Object.values(views).forEach(v => v.classList.remove('active'));
+    views[name].classList.add('active');
+  }
+
+  // ---------- build selection list ----------
+  function renderBabList(){
+    babList.innerHTML = '';
+    GROUPS.forEach(g => {
+      const count = byGroup[g.id].length;
+      const el = document.createElement('div');
+      el.className = 'bab-card';
+      el.dataset.id = g.id;
+      el.innerHTML = `
+        <div class="bab-swatch" style="background:${g.color}"></div>
+        <div class="bab-info">
+          <div class="name">${g.name}</div>
+          <div class="desc">${g.desc}</div>
+        </div>
+        <div class="bab-count">${count} kata</div>
+        <div class="check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      `;
+      el.addEventListener('click', () => toggleBab(g.id));
+      babList.appendChild(el);
+    });
+  }
+
+  function toggleBab(id){
+    if(selected.has(id)) selected.delete(id); else selected.add(id);
+    clearRange();
+    syncBabUI();
+  }
+
+  function syncBabUI(){
+    [...babList.children].forEach(el => {
+      el.classList.toggle('checked', selected.has(el.dataset.id));
+    });
+    const count = [...selected].reduce((sum,id)=>sum+byGroup[id].length,0);
+    renderRangePanel(count);
+    const rangeIsUsable = !shuffleOn && pageSel.size > 0;
+    const countIsUsable = !shuffleOn && !rangeIsUsable && countActive && countN;
+    const effectiveCount = rangeIsUsable
+      ? allSelectedCards().filter(c => pageSel.has(c.p)).length
+      : countIsUsable
+        ? Math.min(countN, count)
+        : count;
+    startBtn.disabled = effectiveCount === 0;
+    quizBtn.disabled = effectiveCount === 0;
+    matchBtn.disabled = effectiveCount === 0;
+    crosswordBtn.disabled = effectiveCount === 0;
+    startHint.textContent = count === 0
+      ? 'Pilih minimal satu bab untuk mulai'
+      : rangeIsUsable
+        ? `${effectiveCount} kartu siap dilatih (hal. ${[...pageSel].join(', ')}${countShuffleOn ? ', diacak' : ''})`
+        : countIsUsable
+          ? `${effectiveCount} kartu siap dilatih (${countShuffleOn ? 'diacak' : 'urut'} dari ${count})`
+          : `${effectiveCount} kartu siap dilatih${countShuffleOn ? ' (diacak)' : ''}`;
+  }
+
+  function allSelectedCards(){
+    let cards = [];
+    GROUPS.forEach(g => { if(selected.has(g.id)) cards = cards.concat(byGroup[g.id]); });
+    return cards;
+  }
+
+  function getSelectedCards(){
+    let cards = allSelectedCards();
+    if(shuffleOn){
+      return shuffleArr([...cards]);
+    }
+    let pool;
+    if(pageSel.size > 0){
+      pool = cards.filter(c => pageSel.has(c.p));
+    } else if(countActive && countN){
+      pool = [...cards].slice(0, countN);
+    } else {
+      pool = [...cards];
+    }
+    if(countShuffleOn) pool = shuffleArr(pool);
+    return pool;
+  }
+
+  // ---------- range panel (card range picker, active when shuffle is off) ----------
+  function clearRange(){
+    pageSel.clear();
+  }
+
+  function pageStart(p){ return parseInt(p, 10); }
+  function pageEnd(p){ return parseInt(p.split('-').pop(), 10); }
+
+  // ---------- jumlah kartu (count picker, active when shuffle is off) ----------
+  function clearCount(){
+    countActive = false;
+    countN = null;
+  }
+
+  function setCount(n, total){
+    n = Math.max(1, Math.min(n, total));
+    countN = n;
+    countActive = true;
+    clearRange();
+  }
+
+  function selectedPages(){
+    const pages = [];
+    const cnt = {};
+    allSelectedCards().forEach(c => {
+      if(!(c.p in cnt)){ cnt[c.p] = 0; pages.push(c.p); }
+      cnt[c.p]++;
+    });
+    return { pages, cnt };
+  }
+
+  function renderRangePanel(total){
+    const showPanel = !shuffleOn && total > 0;
+    rangePanel.style.display = showPanel ? 'flex' : 'none';
+    if(!showPanel){
+      rangeStatus.classList.add('empty');
+      return;
+    }
+
+    const { pages, cnt } = selectedPages();
+    [...pageSel].forEach(p => { if(!pages.includes(p)) pageSel.delete(p); });
+
+    rangeChips.innerHTML = '';
+    const allChip = document.createElement('button');
+    allChip.type = 'button';
+    allChip.className = 'range-chip' + (pageSel.size ? '' : ' active');
+    allChip.textContent = `Semua (${total})`;
+    allChip.addEventListener('click', () => { clearRange(); clearCount(); syncBabUI(); });
+    rangeChips.appendChild(allChip);
+
+    pages.forEach(p => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'range-chip' + (pageSel.has(p) ? ' active' : '');
+      chip.textContent = `Hal. ${p} (${cnt[p]})`;
+      chip.addEventListener('click', () => {
+        if(pageSel.has(p)) pageSel.delete(p); else pageSel.add(p);
+        clearCount();
+        syncBabUI();
+      });
+      rangeChips.appendChild(chip);
+    });
+
+    if(pageSel.size){
+      const n = pages.filter(p => pageSel.has(p)).reduce((sum,p)=>sum+cnt[p],0);
+      rangeStatus.classList.remove('empty');
+      rangeStatusText.textContent = `Halaman aktif: ${pages.filter(p => pageSel.has(p)).join(', ')} (${n} kartu)`;
+    } else {
+      rangeStatus.classList.add('empty');
+    }
+
+    // ---- panel jumlah kartu ----
+    if(countActive && countN > total){ clearCount(); }
+    if(countInput){
+      countInput.max = total;
+      if(countActive) countInput.value = countN;
+    }
+    countShuffleBtn.classList.toggle('active', countShuffleOn);
+    countShuffleBtn.setAttribute('aria-pressed', countShuffleOn);
+    countShuffleBtn.textContent = countShuffleOn ? '🔀 Acak jumlah ini: Aktif' : '🔀 Acak jumlah ini: Nonaktif';
+    if(countActive){
+      countStatus.classList.remove('empty');
+      countStatusText.textContent = `Jumlah aktif: ${countN} kartu dari ${total}${countShuffleOn ? ' (diacak)' : ' (urut)'}`;
+    } else {
+      countStatus.classList.add('empty');
+    }
+  }
+
+  rangeApplyBtn.addEventListener('click', () => {
+    if(selected.size === 0) return;
+    let from = parseInt(rangeFromInput.value, 10);
+    let to = parseInt(rangeToInput.value, 10);
+    if(!from) return;
+    if(!to) to = from;
+    if(from > to){ const t = from; from = to; to = t; }
+    const { pages } = selectedPages();
+    pageSel.clear();
+    pages.forEach(p => { if(pageEnd(p) >= from && pageStart(p) <= to) pageSel.add(p); });
+    clearCount();
+    syncBabUI();
+  });
+
+  rangeResetBtn.addEventListener('click', () => { clearRange(); syncBabUI(); });
+
+  countShuffleBtn.addEventListener('click', () => {
+    countShuffleOn = !countShuffleOn;
+    syncBabUI();
+  });
+
+  countApplyBtn.addEventListener('click', () => {
+    const total = [...selected].reduce((sum,id)=>sum+byGroup[id].length,0);
+    if(total === 0) return;
+    const n = countInput ? parseInt(countInput.value, 10) : NaN;
+    if(!n || n < 1) return;
+    setCount(n, total);
+    syncBabUI();
+  });
+
+  countResetBtn.addEventListener('click', () => { clearCount(); syncBabUI(); });
+
+  $('#btnAll').addEventListener('click', () => { GROUPS.forEach(g=>selected.add(g.id)); clearRange(); syncBabUI(); });
+  $('#btnNone').addEventListener('click', () => { selected.clear(); clearRange(); syncBabUI(); });
+
+  const shuffleBtn = $('#btnShuffleToggle');
+  shuffleBtn.addEventListener('click', () => {
+    shuffleOn = !shuffleOn;
+    shuffleBtn.textContent = shuffleOn ? '🔀 Acak: Aktif' : '🔀 Acak: Nonaktif';
+    shuffleBtn.setAttribute('aria-pressed', shuffleOn);
+    syncBabUI();
+  });
+
+  modeSwitch.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-mode]');
+    if(!btn) return;
+    mode = btn.dataset.mode;
+    [...modeSwitch.children].forEach(b => b.classList.toggle('active', b===btn));
+  });
+
+  function shuffleArr(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  let lastMode = 'flashcard';
+
+  // ---------- start session ----------
+  startBtn.addEventListener('click', () => {
+    lastMode = 'flashcard';
+    const cards = getSelectedCards();
+    deck = cards;
+    total = cards.length;
+    doneCount = 0;
+    roundCount = 1;
+    nextRoundQueue = [];
+    fcSeen = new Set();
+    fcFirstTry = 0;
+    showView('practice');
+    nextCard(true);
+  });
+
+  quizBtn.addEventListener('click', () => {
+    lastMode = 'quiz';
+    startQuiz();
+  });
+
+  matchBtn.addEventListener('click', () => {
+    lastMode = 'match';
+    startMatch();
+  });
+
+  $('#quitBtn').addEventListener('click', () => { showView('select'); });
+  $('#quizQuitBtn').addEventListener('click', () => { showView('select'); });
+  $('#matchQuitBtn').addEventListener('click', () => { showView('select'); });
+  $('#sumBackBtn').addEventListener('click', () => { showView('select'); });
+  $('#sumAgainBtn').addEventListener('click', () => {
+    if(lastMode === 'quiz') startQuiz();
+    else if(lastMode === 'match') startMatch();
+    else startBtn.click();
+  });
+
+  // ---------- practice engine ----------
+  function updateProgressUI(){
+    progNum.textContent = doneCount;
+    progTotal.textContent = total;
+    progFill.style.width = total ? (doneCount/total*100)+'%' : '0%';
+    const remaining = deck.length + nextRoundQueue.length;
+    sectionLabel.textContent = roundCount > 1 ? `Putaran ${roundCount}` : 'Latihan';
+  }
+
+  function nextCard(first){
+    if(deck.length === 0){
+      if(nextRoundQueue.length > 0){
+        deck = shuffleOn ? shuffleArr(nextRoundQueue) : nextRoundQueue;
+        nextRoundQueue = [];
+        roundCount++;
+      } else {
+        return finishSession();
+      }
+    }
+    const item = deck.shift();
+    currentCard = item;
+    renderCard(item);
+    updateProgressUI();
+  }
+
+  function renderCard(item){
+    stage.querySelectorAll('.card').forEach(c => c.remove());
+
+    const card = document.createElement('div');
+    card.className = 'card top';
+
+    const front = mode === 'jp-id'
+      ? `<div class="kanji-text">${item.k}</div>`
+      : `<div class="id-text">${item.m}</div>`;
+
+    const back = mode === 'jp-id'
+      ? `<div class="back-stack">
+           <div class="furigana-text">${item.f || '（かな無し）'}</div>
+           <div class="divider-dot"></div>
+           <div class="meaning-text">${item.m}</div>
+         </div>`
+      : `<div class="back-stack">
+           <div class="kanji-small">${item.k}</div>
+           <div class="furigana-text">${item.f || ''}</div>
+         </div>`;
+
+    const group = GROUPS.find(g => item.id.split('-')[0] === g.id);
+
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="face face-front">
+          <div class="tag"><span class="chip" style="background:${group.color}">${group.name}</span><span class="page-pill">📄 Hal. ${item.p} · No. ${item.n}</span></div>
+          <div class="face-body">${front}</div>
+          <div class="tap-flip-hint">Ketuk kartu untuk lihat jawaban</div>
+        </div>
+        <div class="face face-back">
+          <div class="tag"><span class="chip" style="background:${group.color}">${group.name}</span><span class="page-pill">📄 Hal. ${item.p} · No. ${item.n}</span></div>
+          <div class="face-body">${back}</div>
+          <div class="tap-flip-hint">Geser: kanan=ingat, kiri=coba lagi, bawah=belum pernah</div>
+        </div>
+      </div>
+      <div class="stamp right">INGAT</div>
+      <div class="stamp left">LAGI</div>
+      <div class="stamp down">BELUM</div>
+    `;
+    stage.appendChild(card);
+    attachCardHandlers(card);
+  }
+
+  function resolveCard(result){
+    // result: 'known' | 'again' | 'unseen'
+    if(!currentCard) return;
+    if(!fcSeen.has(currentCard.id)){
+      fcSeen.add(currentCard.id);
+      if(result === 'known') fcFirstTry++;
+    }
+    if(result === 'known'){
+      doneCount++;
+    } else {
+      nextRoundQueue.push(currentCard);
+    }
+    currentCard = null;
+    nextCard();
+  }
+
+  function finishSession(){
+    const pct = total ? +(fcFirstTry/total*100).toFixed(1) : 0;
+    $('#sumPercent').textContent = pct + '%';
+    $('#sumDetail').textContent = `${fcFirstTry} dari ${total} kata langsung diingat di percobaan pertama · semua kata dikuasai dalam ${roundCount} putaran (kartu yang diulang tidak dihitung)`;
+    showView('summary');
+  }
+
+  // ---------- quiz engine ----------
+  let quizQueue = [];
+  let quizTotal = 0;
+  let quizMastered = 0;      // soal yang sudah terjawab benar (termasuk setelah diulang)
+  let quizFirstTry = 0;      // soal yang benar di percobaan pertama (dipakai untuk nilai akhir)
+  let quizWrongCount = 0;
+  let quizAttempted = new Set();
+  let quizRetryIds = new Set();
+  let quizCurrent = null;
+  let quizAnswered = false;
+
+  function startQuiz(){
+    quizQueue = getSelectedCards().slice();
+    quizTotal = quizQueue.length;
+    quizMastered = 0;
+    quizFirstTry = 0;
+    quizWrongCount = 0;
+    quizAttempted = new Set();
+    quizRetryIds = new Set();
+    showView('quiz');
+    renderQuizQuestion();
+  }
+
+  function pickDistractors(correct, count){
+    const pool = VOCAB_DATA.filter(v => v.id !== correct.id && v.k !== correct.k && v.m !== correct.m);
+    const shuffledPool = shuffleArr([...pool]);
+    const picked = [];
+    const seen = new Set([mode === 'jp-id' ? correct.m : correct.k]);
+    for(const v of shuffledPool){
+      const val = mode === 'jp-id' ? v.m : v.k;
+      if(seen.has(val)) continue;
+      seen.add(val);
+      picked.push(v);
+      if(picked.length >= count) break;
+    }
+    return picked;
+  }
+
+  function updateQuizProgress(){
+    quizProgNum.textContent = quizMastered;
+    quizProgTotal.textContent = quizTotal;
+    quizProgFill.style.width = quizTotal ? (quizMastered/quizTotal*100) + '%' : '0%';
+  }
+
+  function renderQuizQuestion(){
+    quizAnswered = false;
+    quizNextBtn.classList.remove('show');
+    quizFeedback.textContent = '';
+    quizFeedback.className = 'quiz-feedback';
+
+    if(quizQueue.length === 0){
+      const pct = quizTotal ? +(quizFirstTry/quizTotal*100).toFixed(1) : 0;
+      $('#sumPercent').textContent = pct + '%';
+      $('#sumDetail').textContent = `Benar ${quizFirstTry} dari ${quizTotal} soal di percobaan pertama` +
+        (quizWrongCount > 0 ? ` · ${quizWrongCount} kali salah lalu diulang sampai benar (soal ulang tidak dihitung)` : ' · tanpa soal ulang');
+      showView('summary');
+      return;
+    }
+
+    quizCurrent = quizQueue.shift();
+    updateQuizProgress();
+
+    const group = GROUPS.find(g => quizCurrent.id.split('-')[0] === g.id);
+    const askJp = mode === 'jp-id';
+    const isRetry = quizRetryIds.has(quizCurrent.id);
+
+    quizQuestion.innerHTML = `
+      <div class="qlabel">${group.name} · <span class="page-pill">📄 Hal. ${quizCurrent.p} · No. ${quizCurrent.n}</span> · ${askJp ? 'Apa artinya?' : 'Kanji yang tepat?'}${isRetry ? '<span class="retry-pill">🔁 Soal ulang</span>' : ''}</div>
+      ${askJp
+        ? `<div class="qtext-jp">${quizCurrent.k}</div>${(quizCurrent.f && hasKanji(quizCurrent.k)) ? `<div class="qtext-furi">${quizCurrent.f}</div>` : ''}`
+        : `<div class="qtext-id">${quizCurrent.m}</div>`}
+    `;
+
+    const distractors = pickDistractors(quizCurrent, 3);
+    const options = shuffleArr([quizCurrent, ...distractors]);
+    const letters = ['A','B','C','D'];
+
+    quizOptions.innerHTML = '';
+    options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-option';
+      btn.dataset.correct = opt.id === quizCurrent.id ? '1' : '0';
+      const label = askJp ? opt.m : `<span class="opt-jp-wrap"><span class="opt-jp">${opt.k}</span>${(opt.f && hasKanji(opt.k)) ? `<span class="opt-furi">${opt.f}</span>` : ''}</span>`;
+      btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${label}</span>`;
+      btn.addEventListener('click', () => onQuizAnswer(btn));
+      quizOptions.appendChild(btn);
+    });
+  }
+
+  function onQuizAnswer(btn){
+    if(quizAnswered) return;
+    quizAnswered = true;
+    const isCorrect = btn.dataset.correct === '1';
+
+    // nilai asli: hanya percobaan pertama tiap soal yang dihitung
+    if(!quizAttempted.has(quizCurrent.id)){
+      quizAttempted.add(quizCurrent.id);
+      if(isCorrect) quizFirstTry++;
+    }
+
+    if(isCorrect){
+      quizMastered++;
+    } else {
+      quizWrongCount++;
+      quizRetryIds.add(quizCurrent.id);
+      // munculkan lagi beberapa soal kemudian, sampai benar
+      const pos = Math.min(quizQueue.length, 2 + Math.floor(Math.random()*3));
+      quizQueue.splice(pos, 0, quizCurrent);
+    }
+    updateQuizProgress();
+
+    [...quizOptions.children].forEach(b => {
+      b.disabled = true;
+      if(b.dataset.correct === '1') b.classList.add('correct');
+      else if(b === btn) b.classList.add('wrong');
+    });
+
+    quizFeedback.textContent = isCorrect
+      ? `✔ Benar! (Hal. ${quizCurrent.p})`
+      : `✘ Kurang tepat. Soal ini akan muncul lagi — lihat Hal. ${quizCurrent.p}.`;
+    quizFeedback.classList.add(isCorrect ? 'correct' : 'wrong');
+    quizNextBtn.classList.add('show');
+    quizNextBtn.textContent = quizQueue.length === 0 ? 'Lihat Hasil →' : 'Lanjut →';
+  }
+
+  quizNextBtn.addEventListener('click', () => {
+    renderQuizQuestion();
+  });
+
+  // ---------- matching game engine ----------
+  function startMatch(){
+    matchDeck = getSelectedCards();
+    matchTotal = matchDeck.length;
+    matchMatchedCount = 0;
+    matchMistakes = 0;
+    showView('match');
+    loadNextMatchBatch();
+  }
+
+  function loadNextMatchBatch(){
+    if(matchDeck.length === 0){
+      finishMatchSession();
+      return;
+    }
+    matchBatch = matchDeck.splice(0, MATCH_BATCH_SIZE);
+    matchSelectedLeft = null;
+    matchSelectedRight = null;
+    matchLocked = false;
+    renderMatchBatch();
+    updateMatchProgressUI();
+  }
+
+  function renderMatchBatch(){
+    matchLeftCol.innerHTML = '';
+    matchRightCol.innerHTML = '';
+
+    const leftItems = shuffleArr([...matchBatch]);
+    const rightItems = shuffleArr([...matchBatch]);
+
+    leftItems.forEach(it => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'match-card kanji';
+      btn.dataset.id = it.id;
+      btn.innerHTML = `
+        <span class="match-kanji-text">${it.k}</span>
+        ${(it.f && hasKanji(it.k)) ? `<span class="match-furi-text">${it.f}</span>` : ''}
+        <span class="match-pg">Hal. ${it.p}</span>
+      `;
+      btn.addEventListener('click', () => onMatchPick('left', btn, it));
+      matchLeftCol.appendChild(btn);
+    });
+
+    rightItems.forEach(it => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'match-card meaning';
+      btn.dataset.id = it.id;
+      btn.innerHTML = `<span class="match-meaning-text">${it.m}</span>`;
+      btn.addEventListener('click', () => onMatchPick('right', btn, it));
+      matchRightCol.appendChild(btn);
+    });
+  }
+
+  function onMatchPick(side, btn, item){
+    if(matchLocked || btn.classList.contains('correct')) return;
+
+    if(side === 'left'){
+      if(matchSelectedLeft) matchSelectedLeft.el.classList.remove('selected');
+      matchSelectedLeft = { el: btn, id: item.id };
+      btn.classList.add('selected');
+    } else {
+      if(matchSelectedRight) matchSelectedRight.el.classList.remove('selected');
+      matchSelectedRight = { el: btn, id: item.id };
+      btn.classList.add('selected');
+    }
+
+    if(matchSelectedLeft && matchSelectedRight){
+      evaluateMatchPair();
+    }
+  }
+
+  function evaluateMatchPair(){
+    matchLocked = true;
+    const left = matchSelectedLeft;
+    const right = matchSelectedRight;
+
+    if(left.id === right.id){
+      left.el.classList.remove('selected');
+      right.el.classList.remove('selected');
+      left.el.classList.add('correct');
+      right.el.classList.add('correct');
+      matchMatchedCount++;
+      matchSelectedLeft = null;
+      matchSelectedRight = null;
+      updateMatchProgressUI();
+      setTimeout(() => {
+        matchLocked = false;
+        const remaining = matchLeftCol.querySelectorAll('.match-card:not(.correct)');
+        if(remaining.length === 0){
+          loadNextMatchBatch();
+        }
+      }, 260);
+    } else {
+      matchMistakes++;
+      left.el.classList.add('wrong');
+      right.el.classList.add('wrong');
+      setTimeout(() => {
+        left.el.classList.remove('selected', 'wrong');
+        right.el.classList.remove('selected', 'wrong');
+        matchSelectedLeft = null;
+        matchSelectedRight = null;
+        matchLocked = false;
+      }, 500);
+    }
+  }
+
+  function updateMatchProgressUI(){
+    matchProgNum.textContent = matchMatchedCount;
+    matchProgTotal.textContent = matchTotal;
+    matchProgFill.style.width = matchTotal ? (matchMatchedCount/matchTotal*100)+'%' : '0%';
+  }
+
+  function finishMatchSession(){
+    const pct = matchTotal ? Math.round(matchTotal/(matchTotal+matchMistakes)*100) : 0;
+    $('#sumPercent').textContent = pct + '%';
+    $('#sumDetail').textContent = `${matchTotal} pasangan dicocokkan${matchMistakes > 0 ? ` (${matchMistakes} kali salah)` : ' tanpa kesalahan'}`;
+    showView('summary');
+  }
+
+  // ---------- gesture handling ----------
+  function attachCardHandlers(card){
+    let startX=0, startY=0, curX=0, curY=0, dragging=false, moved=false;
+    let flipped = false;
+
+    function onDown(e){
+      const p = e.touches ? e.touches[0] : e;
+      startX = p.clientX; startY = p.clientY;
+      curX = 0; curY = 0; dragging = true; moved = false;
+      card.classList.add('dragging');
+    }
+    function onMove(e){
+      if(!dragging) return;
+      const p = e.touches ? e.touches[0] : e;
+      curX = p.clientX - startX;
+      curY = p.clientY - startY;
+      if(Math.abs(curX) > 6 || Math.abs(curY) > 6) moved = true;
+      const rot = curX * 0.06;
+      card.style.transform = `translate(${curX}px, ${curY}px) rotate(${rot}deg)`;
+      const stampR = card.querySelector('.stamp.right');
+      const stampL = card.querySelector('.stamp.left');
+      const stampD = card.querySelector('.stamp.down');
+      stampR.style.opacity = Math.max(0, Math.min(1, curX/90));
+      stampL.style.opacity = Math.max(0, Math.min(1, -curX/90));
+      stampD.style.opacity = curY>0 ? Math.max(0, Math.min(1, curY/90)) : 0;
+    }
+    function onUp(e){
+      if(!dragging) return;
+      dragging = false;
+      card.classList.remove('dragging');
+      if(e && e.type === 'touchend') e.preventDefault();
+      const absX = Math.abs(curX), absY = Math.abs(curY);
+      const THRESH = 90;
+      if(absY > THRESH && absY > absX){
+        exitCard(0, 500, 0, 'unseen');
+      } else if(curX > THRESH){
+        exitCard(600, curY, 20, 'known');
+      } else if(curX < -THRESH){
+        exitCard(-600, curY, -20, 'again');
+      } else {
+        card.style.transform = '';
+        card.querySelectorAll('.stamp').forEach(s=>s.style.opacity=0);
+        if(!moved){ toggleFlip(); }
+      }
+    }
+    function exitCard(x,y,rot,result){
+      card.style.transition = 'transform .35s ease';
+      card.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+      card.style.pointerEvents = 'none';
+      setTimeout(()=>resolveCard(result), 220);
+    }
+    function toggleFlip(){
+      flipped = !flipped;
+      card.classList.toggle('flipped', flipped);
+    }
+
+    card.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    card.addEventListener('touchstart', onDown, {passive:true});
+    card.addEventListener('touchmove', onMove, {passive:true});
+    card.addEventListener('touchend', onUp);
+
+    card._resolveExternally = (result) => {
+      if(result==='known') exitCard(600, -10, 20, 'known');
+      else if(result==='again') exitCard(-600, -10, -20, 'again');
+      else exitCard(0, 500, 0, 'unseen');
+    };
+  }
+
+  $('#btnKnown').addEventListener('click', () => { const c = stage.querySelector('.card'); if(c) c._resolveExternally('known'); });
+  $('#btnAgain').addEventListener('click', () => { const c = stage.querySelector('.card'); if(c) c._resolveExternally('again'); });
+  $('#btnUnseen').addEventListener('click', () => { const c = stage.querySelector('.card'); if(c) c._resolveExternally('unseen'); });
+
+  document.addEventListener('keydown', e => {
+    if(!views.practice.classList.contains('active')) return;
+    const c = stage.querySelector('.card');
+    if(!c) return;
+    if(e.key === 'ArrowRight'){ c._resolveExternally('known'); }
+    else if(e.key === 'ArrowLeft'){ c._resolveExternally('again'); }
+    else if(e.key === 'ArrowDown'){ c._resolveExternally('unseen'); }
+    else if(e.key === ' ' || e.key === 'Enter'){ c.classList.toggle('flipped'); }
+  });
+
+  // ---------- vocab list view ----------
+  function renderVocabList(filterText){
+    const q = (filterText || '').trim().toLowerCase();
+    listScroll.innerHTML = '';
+    let anyMatch = false;
+
+    GROUPS.forEach(g => {
+      const items = byGroup[g.id].filter(it => {
+        if(!q) return true;
+        const pm = q.match(/^(?:hal\.?\s*)?(\d+(?:-\d+)?)$/);
+        if(pm && (it.p === pm[1] || it.p.split('-').includes(pm[1]))) return true;
+        return it.k.toLowerCase().includes(q) ||
+               it.f.toLowerCase().includes(q) ||
+               it.m.toLowerCase().includes(q);
+      });
+      if(items.length === 0) return;
+      anyMatch = true;
+
+      const header = document.createElement('div');
+      header.className = 'list-group-header';
+      header.style.background = g.color;
+      header.innerHTML = `<span>${g.name} — ${g.desc}</span><span class="list-group-count">${items.length} kata</span>`;
+      listScroll.appendChild(header);
+
+      items.forEach(it => {
+        const row = document.createElement('div');
+        row.className = 'list-row';
+        row.innerHTML = `
+          <div class="kanji">${it.k}<span class="furi">${it.f || ''}</span></div>
+          <div class="meaning">${it.m}<span class="pg">Hal. ${it.p}</span></div>
+        `;
+        listScroll.appendChild(row);
+      });
+    });
+
+    if(!anyMatch){
+      listScroll.innerHTML = '<div class="list-empty">Tidak ada kosakata yang cocok.</div>';
+    }
+  }
+
+  $('#openListBtn').addEventListener('click', () => {
+    listSearch.value = '';
+    renderVocabList('');
+    showView('list');
+  });
+  $('#listBackBtn').addEventListener('click', () => { showView('select'); });
+  listSearch.addEventListener('input', () => renderVocabList(listSearch.value));
+
+  // ==================== CROSSWORD (TEKA-TEKI SILANG) ====================
+  const xwBoard = $('#xwBoard');
+  const xwClues = $('#xwClues');
+  const xwFeedback = $('#xwFeedback');
+  const xwCheckBtn = $('#xwCheckBtn');
+  const xwHintBtn = $('#xwHintBtn');
+  const xwNewBtn = $('#xwNewBtn');
+  const xwFilledNum = $('#xwFilledNum');
+  const xwTotalNum = $('#xwTotalNum');
+  const xwProgFill = $('#xwProgFill');
+
+  let xwGrid = null;   // Map "r,c" -> jawaban huruf (normalisasi, mulai dari 0,0)
+  let xwWidth = 0, xwHeight = 0;
+  let xwWords = [];    // [{number, dir:'H'|'V', row, col, answer, card}]
+
+  function xwKey(r, c){ return r + ',' + c; }
+
+  function getCrosswordPool(){
+    let cards = [];
+    GROUPS.forEach(g => { if(selected.has(g.id)) cards = cards.concat(byGroup[g.id]); });
+    if(cards.length < 20) cards = VOCAB_DATA.slice();
+    return cards;
+  }
+
+  function extractCrosswordCandidates(cards){
+    const seen = new Set();
+    const out = [];
+    cards.forEach(c => {
+      const raw = (c.m || '').trim();
+      if(!/^[A-Za-z]{3,12}$/.test(raw)) return;
+      const upper = raw.toUpperCase();
+      if(seen.has(upper)) return;
+      seen.add(upper);
+      out.push({ answer: upper, card: c });
+    });
+    return out;
+  }
+
+  function xwCanPlace(grid, word, row, col, dir){
+    const dr = dir === 'V' ? 1 : 0;
+    const dc = dir === 'H' ? 1 : 0;
+    const beforeR = row - dr, beforeC = col - dc;
+    if(grid.has(xwKey(beforeR, beforeC))) return false;
+    const afterR = row + dr * word.length, afterC = col + dc * word.length;
+    if(grid.has(xwKey(afterR, afterC))) return false;
+
+    let intersections = 0;
+    for(let i = 0; i < word.length; i++){
+      const r = row + dr * i, c = col + dc * i;
+      const existing = grid.get(xwKey(r, c));
+      if(existing !== undefined){
+        if(existing !== word[i]) return false;
+        intersections++;
+      } else {
+        const perpR1 = r + dc, perpC1 = c + dr;
+        const perpR2 = r - dc, perpC2 = c - dr;
+        if(grid.has(xwKey(perpR1, perpC1))) return false;
+        if(grid.has(xwKey(perpR2, perpC2))) return false;
+      }
+    }
+    return intersections > 0;
+  }
+
+  function xwPlace(grid, word, row, col, dir){
+    const dr = dir === 'V' ? 1 : 0;
+    const dc = dir === 'H' ? 1 : 0;
+    for(let i = 0; i < word.length; i++){
+      grid.set(xwKey(row + dr * i, col + dc * i), word[i]);
+    }
+  }
+
+  function generateCrossword(targetCount){
+    const pool = extractCrosswordCandidates(getCrosswordPool());
+    if(pool.length === 0) return null;
+
+    const shuffled = shuffleArr([...pool]);
+    shuffled.sort((a, b) => b.answer.length - a.answer.length);
+
+    const grid = new Map();
+    const placed = [];
+    const usedAnswers = new Set();
+
+    const first = shuffled[0];
+    xwPlace(grid, first.answer, 0, 0, 'H');
+    placed.push({ answer: first.answer, card: first.card, row: 0, col: 0, dir: 'H' });
+    usedAnswers.add(first.answer);
+
+    const remaining = shuffled.slice(1);
+    const attempts = [...remaining, ...remaining, ...remaining];
+
+    for(const cand of attempts){
+      if(placed.length >= targetCount) break;
+      if(usedAnswers.has(cand.answer)) continue;
+
+      let bestPlacement = null;
+      findSpot:
+      for(const [cellKey, letter] of grid){
+        for(let i = 0; i < cand.answer.length; i++){
+          if(cand.answer[i] !== letter) continue;
+          const [r, c] = cellKey.split(',').map(Number);
+          const hRow = r, hCol = c - i;
+          if(xwCanPlace(grid, cand.answer, hRow, hCol, 'H')){
+            bestPlacement = { row: hRow, col: hCol, dir: 'H' };
+            break findSpot;
+          }
+          const vRow = r - i, vCol = c;
+          if(xwCanPlace(grid, cand.answer, vRow, vCol, 'V')){
+            bestPlacement = { row: vRow, col: vCol, dir: 'V' };
+            break findSpot;
+          }
+        }
+      }
+
+      if(bestPlacement){
+        xwPlace(grid, cand.answer, bestPlacement.row, bestPlacement.col, bestPlacement.dir);
+        placed.push({ answer: cand.answer, card: cand.card, row: bestPlacement.row, col: bestPlacement.col, dir: bestPlacement.dir });
+        usedAnswers.add(cand.answer);
+      }
+    }
+
+    if(placed.length < 4) return null;
+
+    let minR = Infinity, minC = Infinity, maxR = -Infinity, maxC = -Infinity;
+    placed.forEach(w => {
+      const dr = w.dir === 'V' ? 1 : 0, dc = w.dir === 'H' ? 1 : 0;
+      const endR = w.row + dr * (w.answer.length - 1);
+      const endC = w.col + dc * (w.answer.length - 1);
+      minR = Math.min(minR, w.row, endR);
+      minC = Math.min(minC, w.col, endC);
+      maxR = Math.max(maxR, w.row, endR);
+      maxC = Math.max(maxC, w.col, endC);
+    });
+
+    const normalizedGrid = new Map();
+    grid.forEach((letter, key) => {
+      const [r, c] = key.split(',').map(Number);
+      normalizedGrid.set(xwKey(r - minR, c - minC), letter);
+    });
+    placed.forEach(w => { w.row -= minR; w.col -= minC; });
+
+    const height = maxR - minR + 1;
+    const width = maxC - minC + 1;
+
+    const sortedForNumbering = [...placed].sort((a, b) => (a.row - b.row) || (a.col - b.col));
+    const cellNumbers = new Map();
+    let num = 1;
+    sortedForNumbering.forEach(w => {
+      const k = xwKey(w.row, w.col);
+      if(!cellNumbers.has(k)) cellNumbers.set(k, num++);
+      w.number = cellNumbers.get(k);
+    });
+
+    return { grid: normalizedGrid, placed, width, height };
+  }
+
+  function renderCrossword(data){
+    xwGrid = data.grid;
+    xwWidth = data.width;
+    xwHeight = data.height;
+    xwWords = data.placed;
+
+    const cellSize = Math.max(20, Math.min(32, Math.floor(300 / xwWidth)));
+    xwBoard.innerHTML = '';
+    xwBoard.style.gridTemplateColumns = `repeat(${xwWidth}, ${cellSize}px)`;
+    xwBoard.style.gridTemplateRows = `repeat(${xwHeight}, ${cellSize}px)`;
+
+    const startNumbers = new Map();
+    data.placed.forEach(w => startNumbers.set(xwKey(w.row, w.col), w.number));
+
+    for(let r = 0; r < xwHeight; r++){
+      for(let c = 0; c < xwWidth; c++){
+        const key = xwKey(r, c);
+        const cellDiv = document.createElement('div');
+        cellDiv.style.width = cellSize + 'px';
+        cellDiv.style.height = cellSize + 'px';
+        if(data.grid.has(key)){
+          cellDiv.className = 'xw-cell';
+          if(startNumbers.has(key)){
+            const numSpan = document.createElement('span');
+            numSpan.className = 'xw-num';
+            numSpan.textContent = startNumbers.get(key);
+            cellDiv.appendChild(numSpan);
+          }
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.maxLength = 1;
+          input.className = 'xw-input';
+          input.dataset.r = r;
+          input.dataset.c = c;
+          input.autocomplete = 'off';
+          cellDiv.appendChild(input);
+        } else {
+          cellDiv.className = 'xw-blank';
+        }
+        xwBoard.appendChild(cellDiv);
+      }
+    }
+
+    attachXwInputHandlers();
+    renderXwClues();
+    updateXwProgress();
+    xwFeedback.textContent = '';
+    xwFeedback.className = 'xw-feedback';
+  }
+
+  function attachXwInputHandlers(){
+    const inputs = [...xwBoard.querySelectorAll('.xw-input')];
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        input.value = input.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
+        input.classList.remove('correct', 'wrong');
+        updateXwProgress();
+        if(input.value){
+          const r = +input.dataset.r, c = +input.dataset.c;
+          const next = xwBoard.querySelector(`.xw-input[data-r="${r}"][data-c="${c+1}"]`) ||
+                       xwBoard.querySelector(`.xw-input[data-r="${r+1}"][data-c="${c}"]`);
+          if(next) next.focus();
+        }
+      });
+      input.addEventListener('keydown', (e) => {
+        const r = +input.dataset.r, c = +input.dataset.c;
+        if(e.key === 'Backspace' && !input.value){
+          const prev = xwBoard.querySelector(`.xw-input[data-r="${r}"][data-c="${c-1}"]`);
+          if(prev) prev.focus();
+        } else if(e.key === 'ArrowRight'){
+          const next = xwBoard.querySelector(`.xw-input[data-r="${r}"][data-c="${c+1}"]`);
+          if(next) next.focus();
+        } else if(e.key === 'ArrowLeft'){
+          const prev = xwBoard.querySelector(`.xw-input[data-r="${r}"][data-c="${c-1}"]`);
+          if(prev) prev.focus();
+        } else if(e.key === 'ArrowDown'){
+          const next = xwBoard.querySelector(`.xw-input[data-r="${r+1}"][data-c="${c}"]`);
+          if(next) next.focus();
+        } else if(e.key === 'ArrowUp'){
+          const prev = xwBoard.querySelector(`.xw-input[data-r="${r-1}"][data-c="${c}"]`);
+          if(prev) prev.focus();
+        }
+      });
+    });
+  }
+
+  function renderXwClues(){
+    const across = xwWords.filter(w => w.dir === 'H').sort((a, b) => a.number - b.number);
+    const down = xwWords.filter(w => w.dir === 'V').sort((a, b) => a.number - b.number);
+
+    function clueLine(w){
+      const furi = w.card.f ? ` (${w.card.f})` : '';
+      return `<div class="xw-clue-item"><span class="xw-clue-num">${w.number}.</span> <span class="xw-clue-jp">${w.card.k}</span>${furi} <span class="page-pill">Hal. ${w.card.p}</span></div>`;
+    }
+
+    xwClues.innerHTML = `
+      <div class="xw-clue-col">
+        <div class="xw-clue-heading">➡️ Mendatar</div>
+        ${across.map(clueLine).join('')}
+      </div>
+      <div class="xw-clue-col">
+        <div class="xw-clue-heading">⬇️ Menurun</div>
+        ${down.map(clueLine).join('')}
+      </div>
+    `;
+  }
+
+  function updateXwProgress(){
+    const inputs = [...xwBoard.querySelectorAll('.xw-input')];
+    const filled = inputs.filter(i => i.value).length;
+    xwFilledNum.textContent = filled;
+    xwTotalNum.textContent = inputs.length;
+    xwProgFill.style.width = inputs.length ? (filled / inputs.length * 100) + '%' : '0%';
+  }
+
+  function checkCrossword(){
+    const inputs = [...xwBoard.querySelectorAll('.xw-input')];
+    let correct = 0;
+    inputs.forEach(input => {
+      const answerLetter = xwGrid.get(`${input.dataset.r},${input.dataset.c}`);
+      input.classList.remove('correct', 'wrong');
+      if(!input.value) return;
+      if(input.value === answerLetter){
+        input.classList.add('correct');
+        correct++;
+      } else {
+        input.classList.add('wrong');
+      }
+    });
+    const total = inputs.length;
+    if(correct === total){
+      xwFeedback.textContent = `🎉 Selesai! Semua ${total} kotak benar.`;
+      xwFeedback.className = 'xw-feedback correct';
+    } else {
+      xwFeedback.textContent = `${correct}/${total} kotak benar. Cek lagi kotak yang berwarna merah.`;
+      xwFeedback.className = 'xw-feedback wrong';
+    }
+  }
+
+  function hintCrossword(){
+    const inputs = [...xwBoard.querySelectorAll('.xw-input')];
+    const candidates = inputs.filter(input => {
+      const answerLetter = xwGrid.get(`${input.dataset.r},${input.dataset.c}`);
+      return input.value !== answerLetter;
+    });
+    if(candidates.length === 0){
+      xwFeedback.textContent = 'Semua kotak sudah terisi benar!';
+      xwFeedback.className = 'xw-feedback correct';
+      return;
+    }
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    pick.value = xwGrid.get(`${pick.dataset.r},${pick.dataset.c}`);
+    pick.classList.remove('wrong');
+    pick.classList.add('correct');
+    updateXwProgress();
+  }
+
+  function startCrossword(){
+    const data = generateCrossword(12);
+    showView('crossword');
+    if(data){
+      renderCrossword(data);
+    } else {
+      xwBoard.innerHTML = '';
+      xwClues.innerHTML = '';
+      xwFilledNum.textContent = '0';
+      xwTotalNum.textContent = '0';
+      xwProgFill.style.width = '0%';
+      xwFeedback.textContent = 'Kosakata yang dipilih belum cukup untuk membuat teka-teki. Coba pilih bab lain.';
+      xwFeedback.className = 'xw-feedback wrong';
+    }
+  }
+
+  crosswordBtn.addEventListener('click', startCrossword);
+  $('#crosswordQuitBtn').addEventListener('click', () => { showView('select'); });
+  xwCheckBtn.addEventListener('click', checkCrossword);
+  xwHintBtn.addEventListener('click', hintCrossword);
+  xwNewBtn.addEventListener('click', startCrossword);
+
+  // ---------- init ----------
+  renderBabList();
+  syncBabUI();
+
+})();
+</script>
+</body>
+</html>
